@@ -1,0 +1,8 @@
+name = "jarvis-ai-router"
+main = "index.js"
+compatibility_date = "2026-09-25"
+
+# Secrets are added in Cloudflare, never here.
+# Optional non-secret variables can be configured there too:
+# GEMINI_MODEL = "gemini-3.5-flash-lite"
+# GROQ_MODEL = "openai/gpt-oss-120b"
