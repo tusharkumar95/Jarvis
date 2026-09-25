@@ -37,5 +37,49 @@ function projectName(idea){const skip=new Set(["i","want","an","a","app","that",
 function renderProjects(){const a=projects(),box=document.querySelector("#projectsList");document.querySelector("#homeProjectCount").textContent=a.length;if(!a.length){box.innerHTML='<div class="empty-state">No saved projects yet. Your next idea starts above.</div>';return}box.innerHTML=a.map((p,i)=>'<article class="project glass"><div class="project-top"><div><small>IDEA · '+esc(p.date)+'</small><h3>'+esc(p.name)+'</h3></div><button data-del="'+i+'">×</button></div><p>'+esc(p.idea)+'</p></article>').join("");document.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{const x=projects();x.splice(Number(b.dataset.del),1);save(x);renderProjects()}));}
 document.querySelector("#startBuild").addEventListener("click",()=>{const el=document.querySelector("#idea"),idea=el.value.trim();if(!idea)return;const a=projects();a.unshift({name:projectName(idea),idea,date:new Date().toLocaleDateString(undefined,{month:"short",day:"numeric"})});save(a.slice(0,30));el.value="";renderProjects();});document.querySelector("#clearProjects").addEventListener("click",()=>{save([]);renderProjects()});renderProjects();
 
-document.querySelector("#askForm").addEventListener("submit",e=>{e.preventDefault();const el=document.querySelector("#askInput"),v=el.value.trim();if(!v)return;const c=document.querySelector("#chat");c.insertAdjacentHTML("beforeend",'<div class="message user">'+esc(v)+'</div>');c.insertAdjacentHTML("beforeend",'<div class="message jarvis">The secure AI router is the next piece. I’m keeping provider keys out of this public site, so this message is local for now.</div>');el.value="";});
+async function checkRouter(){
+  const base=String(window.JARVIS_API||"").replace(/\/$/,"");
+  if(!base)return;
+  try{
+    const res=await fetch(base+"/health");
+    const data=await res.json();
+    document.querySelector("#pGemini").textContent="Gemini "+(data.providers?.gemini?"●":"○");
+    document.querySelector("#pGroq").textContent="Groq "+(data.providers?.groq?"●":"○");
+    document.querySelector("#pOpenRouter").textContent="OpenRouter "+(data.providers?.openrouter?"●":"○");
+    const pill=document.querySelector(".router-pill");
+    if(pill)pill.textContent="Router online";
+  }catch{}
+}
+checkRouter();
+
+const conversation=[];
+document.querySelector("#askForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const el=document.querySelector("#askInput"),v=el.value.trim();
+  if(!v)return;
+  const c=document.querySelector("#chat");
+  c.insertAdjacentHTML("beforeend",'<div class="message user">'+esc(v)+'</div>');
+  conversation.push({role:"user",content:v});
+  el.value="";
+  const base=String(window.JARVIS_API||"").replace(/\/$/,"");
+  if(!base){
+    c.insertAdjacentHTML("beforeend",'<div class="message jarvis">The secure router code is ready, but its Cloudflare URL is not connected yet.</div>');
+    return;
+  }
+  const wait=document.createElement("div");
+  wait.className="message jarvis";
+  wait.textContent="Thinking…";
+  c.appendChild(wait);
+  try{
+    const res=await fetch(base+"/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:conversation})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||"Router error");
+    wait.textContent=data.text||"No response";
+    conversation.push({role:"assistant",content:data.text||""});
+    const pill=document.querySelector(".router-pill");
+    if(pill)pill.textContent=(data.provider||"AI")+" · free";
+  }catch(err){
+    wait.textContent="Jarvis could not reach a free model: "+(err.message||err);
+  }
+});
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
