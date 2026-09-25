@@ -1,0 +1,9 @@
+{
+  "name": "Jarvis Personal OS",
+  "short_name": "Jarvis",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4efe7",
+  "theme_color": "#f6f2eb",
+  "icons": []
+}
