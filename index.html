@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f6f2eb" />
+  <title>Jarvis</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient a1"></div>
+  <div class="ambient a2"></div>
+
+  <main class="shell">
+    <header class="topbar glass">
+      <div>
+        <p class="eyebrow" id="dateLabel">Today</p>
+        <h1>Jarvis</h1>
+      </div>
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme">◐</button>
+    </header>
+
+    <section id="home" class="view active">
+      <div class="hero">
+        <p class="eyebrow">PERSONAL OS</p>
+        <h2 id="greeting">Good evening.</h2>
+        <p class="subtle">Everything important, without opening six apps.</p>
+      </div>
+
+      <div class="askbar glass" data-go="ask">
+        <span class="spark">✦</span>
+        <span>Ask Jarvis anything…</span>
+        <span class="arrow">→</span>
+      </div>
+
+      <div class="grid two">
+        <article class="card glass accent-card">
+          <p class="eyebrow">TODAY</p>
+          <h3>Your day at a glance</h3>
+          <div class="mini-row"><span>Weather</span><strong>Connect later</strong></div>
+          <div class="mini-row"><span>Calendar</span><strong>Connect later</strong></div>
+          <div class="mini-row"><span>Tasks</span><strong>0 urgent</strong></div>
+        </article>
+
+        <article class="card glass" data-go="discover">
+          <div class="card-top">
+            <p class="eyebrow">DISCOVER</p><span>2 min</span>
+          </div>
+          <h3 id="discoverTitle">How a volcano changed world history</h3>
+          <p class="subtle" id="discoverTeaser">A giant eruption in Indonesia helped create a “year without a summer” thousands of kilometres away.</p>
+          <button class="text-btn">Learn today's story →</button>
+        </article>
+      </div>
+
+      <h3 class="section-title">Your tools</h3>
+      <div class="tool-grid">
+        <button class="tool glass" data-go="briefly"><span>📰</span><b>Briefly</b><small>News worth knowing</small></button>
+        <button class="tool glass" data-go="radar"><span>📈</span><b>Investment Radar</b><small>Markets & research</small></button>
+        <button class="tool glass" data-go="discover"><span>🌍</span><b>Discover</b><small>History + geography</small></button>
+        <button class="tool glass" data-go="lab"><span>🧪</span><b>Lab</b><small>Build a new app</small></button>
+      </div>
+    </section>
+
+    <section id="ask" class="view">
+      <div class="page-head">
+        <p class="eyebrow">AI ROUTER</p>
+        <h2>Ask Jarvis</h2>
+        <p class="subtle">Free-first routing. The provider can change behind the scenes; your conversation stays here.</p>
+      </div>
+      <div class="status-strip glass">
+        <span class="dot"></span>
+        <b>Free mode</b>
+        <span>Provider routing will be connected in Phase 2</span>
+      </div>
+      <div class="chat glass" id="chat">
+        <div class="message jarvis">What do you want to figure out or build?</div>
+      </div>
+      <form class="composer glass" id="askForm">
+        <textarea id="askInput" rows="1" placeholder="Ask, research, plan, build…"></textarea>
+        <button type="submit">↑</button>
+      </form>
+    </section>
+
+    <section id="briefly" class="view">
+      <div class="page-head">
+        <p class="eyebrow">BRIEFLY</p>
+        <h2>News without the noise</h2>
+        <p class="subtle">This will plug your existing Briefly feed into Jarvis instead of opening a separate app.</p>
+      </div>
+      <div class="placeholder glass">
+        <span class="big-icon">📰</span>
+        <h3>Integration slot ready</h3>
+        <p>Your current Briefly data/feed will appear here in the next phase.</p>
+      </div>
+    </section>
+
+    <section id="radar" class="view">
+      <div class="page-head">
+        <p class="eyebrow">INVESTMENT RADAR</p>
+        <h2>Markets, simplified</h2>
+        <p class="subtle">Research, watchlists and “what changed?” summaries will live here.</p>
+      </div>
+      <div class="grid two">
+        <article class="card glass"><p class="eyebrow">CANADA</p><h3>Market snapshot</h3><p class="subtle">Connect your existing project in Phase 2.</p></article>
+        <article class="card glass"><p class="eyebrow">INDIA</p><h3>Market snapshot</h3><p class="subtle">Connect your existing project in Phase 2.</p></article>
+      </div>
+    </section>
+
+    <section id="discover" class="view">
+      <div class="page-head">
+        <p class="eyebrow">DISCOVER</p>
+        <h2>One fascinating thing a day</h2>
+        <p class="subtle">History and geography told as a story, not a textbook.</p>
+      </div>
+
+      <article class="story glass">
+        <div class="story-meta"><span>HISTORY × GEOGRAPHY</span><span>~2 min</span></div>
+        <h2>1816: the year summer disappeared</h2>
+        <p>In April 1815, Mount Tambora in present-day Indonesia produced one of the largest volcanic eruptions in recorded history. The immediate destruction was catastrophic — but the stranger part happened later.</p>
+        <p>Material blasted high into the atmosphere reduced the sunlight reaching Earth. By 1816, parts of Europe and North America experienced unusually cold weather, crop failures and even summer snow.</p>
+        <div class="fact">
+          <small>THE SURPRISING PART</small>
+          <b>A volcano in Southeast Asia helped alter weather thousands of kilometres away.</b>
+        </div>
+        <p>It also influenced culture. During a famously cold and rainy stay near Lake Geneva, a group of writers spent more time indoors. One of them, Mary Shelley, began the story that became <em>Frankenstein</em>.</p>
+        <div class="why">
+          <small>WHY IT MATTERS</small>
+          <p>Geography is connected. A physical event in one place can influence food, migration, economics and culture on another continent.</p>
+        </div>
+        <details class="quiz">
+          <summary>Quick question</summary>
+          <p>Where is Mount Tambora?</p>
+          <div class="choices">
+            <button data-answer="wrong">Japan</button>
+            <button data-answer="right">Indonesia</button>
+            <button data-answer="wrong">Italy</button>
+          </div>
+          <p class="answer" id="quizAnswer"></p>
+        </details>
+      </article>
+    </section>
+
+    <section id="lab" class="view">
+      <div class="page-head">
+        <p class="eyebrow">LAB</p>
+        <h2>Build something new</h2>
+        <p class="subtle">Describe an idea. Later, the AI router will turn it into a plan, code, preview and GitHub project.</p>
+      </div>
+
+      <div class="builder glass">
+        <label for="idea">What do you want to make?</label>
+        <textarea id="idea" rows="5" placeholder="Example: An app where I photograph grocery receipts and it remembers the price of every item…"></textarea>
+        <button id="startBuild">✦ Start project</button>
+      </div>
+
+      <div id="projectCard" class="project glass hidden">
+        <div><small>NEW PROJECT</small><h3 id="projectName">Untitled project</h3></div>
+        <div class="steps">
+          <span class="done">✓ Idea captured</span>
+          <span>○ Product plan</span>
+          <span>○ UI</span>
+          <span>○ Code</span>
+          <span>○ Test</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav glass">
+    <button class="nav active" data-go="home"><span>⌂</span><small>Home</small></button>
+    <button class="nav" data-go="ask"><span>✦</span><small>Ask</small></button>
+    <button class="nav" data-go="discover"><span>◎</span><small>Discover</small></button>
+    <button class="nav" data-go="lab"><span>＋</span><small>Lab</small></button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
