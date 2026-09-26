@@ -6,3 +6,6 @@ compatibility_date = "2026-09-25"
 # Optional non-secret variables can be configured there too:
 # GEMINI_MODEL = "gemini-3.5-flash-lite"
 # GROQ_MODEL = "openai/gpt-oss-120b"
+
+[observability.logs]
+invocation_logs = false
