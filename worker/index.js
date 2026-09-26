@@ -23,10 +23,11 @@ export default {
       return json({
         ok: true,
         freeOnly: true,
+        privacyDefault: "private",
         providers: {
-          gemini: Boolean(env.GEMINI_API_KEY),
           groq: Boolean(env.GROQ_API_KEY),
-          openrouter: Boolean(env.OPENROUTER_API_KEY)
+          openrouter: Boolean(env.OPENROUTER_API_KEY),
+          gemini: Boolean(env.GEMINI_API_KEY) && env.ALLOW_GEMINI_FREE === "true"
         }
       }, 200, cors);
     }
@@ -43,26 +44,29 @@ export default {
     if (!messages.length) return json({ error: "Message required" }, 400, cors);
 
     const errors = [];
+    const mode = body.mode === "public" ? "public" : "private";
 
-    if (env.GEMINI_API_KEY) {
-      try {
-        const result = await callGemini(messages, env);
-        return json({ ...result, freeOnly: true }, 200, cors);
-      } catch (e) { errors.push({ provider: "gemini", error: safeError(e) }); }
-    }
-
+    // Privacy-first routing. Private mode never uses Gemini Free.
     if (env.GROQ_API_KEY) {
       try {
         const result = await callGroq(messages, env);
-        return json({ ...result, freeOnly: true }, 200, cors);
+        return json({ ...result, mode, freeOnly: true }, 200, cors);
       } catch (e) { errors.push({ provider: "groq", error: safeError(e) }); }
     }
 
     if (env.OPENROUTER_API_KEY) {
       try {
         const result = await callOpenRouter(messages, env);
-        return json({ ...result, freeOnly: true }, 200, cors);
+        return json({ ...result, mode, freeOnly: true }, 200, cors);
       } catch (e) { errors.push({ provider: "openrouter", error: safeError(e) }); }
+    }
+
+    // Gemini Free is opt-in for public/general questions only.
+    if (mode === "public" && env.ALLOW_GEMINI_FREE === "true" && env.GEMINI_API_KEY) {
+      try {
+        const result = await callGemini(messages, env);
+        return json({ ...result, mode, freeOnly: true }, 200, cors);
+      } catch (e) { errors.push({ provider: "gemini", error: safeError(e) }); }
     }
 
     return json({
@@ -142,7 +146,8 @@ async function callOpenRouter(messages, env) {
       model,
       messages: [{ role: "system", content: SYSTEM }, ...messages],
       max_tokens: 1200,
-      temperature: 0.7
+      temperature: 0.7,
+      provider: { zdr: true }
     })
   });
   const data = await parse(r);
