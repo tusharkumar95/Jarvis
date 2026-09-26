@@ -147,7 +147,7 @@ async function callOpenRouter(messages, env) {
       messages: [{ role: "system", content: SYSTEM }, ...messages],
       max_tokens: 1200,
       temperature: 0.7,
-      provider: { zdr: true }
+      provider: { zdr: true, data_collection: "deny" }
     })
   });
   const data = await parse(r);
