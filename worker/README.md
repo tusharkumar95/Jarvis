@@ -28,3 +28,5 @@ Optional model settings:
 
 ## Frontend
 After deployment, put the Worker URL into /config.js as JARVIS_API.
+
+Deployment trigger: Jarvis Worker connected to Cloudflare Builds.
