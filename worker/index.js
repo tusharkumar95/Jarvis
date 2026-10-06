@@ -6,6 +6,10 @@ const ALLOWED_ORIGINS = new Set([
 
 const SYSTEM = "You are Jarvis, a concise personal AI assistant. Be practical, clear and useful. Never claim an action was completed unless it actually was.";
 
+// TEMPORARY diagnostic switch. While true, normal chat skips Groq so we can
+// verify OpenRouter works as the backup. Turn this back to false after testing.
+const DIAGNOSTIC_FORCE_OPENROUTER = true;
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
@@ -24,6 +28,7 @@ export default {
         ok: true,
         freeOnly: true,
         privacyDefault: "private",
+        diagnosticForceOpenRouter: DIAGNOSTIC_FORCE_OPENROUTER,
         providers: {
           groq: Boolean(env.GROQ_API_KEY),
           openrouter: Boolean(env.OPENROUTER_API_KEY),
@@ -47,7 +52,8 @@ export default {
     const mode = body.mode === "public" ? "public" : "private";
 
     // Privacy-first routing. Private mode never uses Gemini Free.
-    if (env.GROQ_API_KEY) {
+    // During the temporary diagnostic test, Groq is deliberately skipped.
+    if (env.GROQ_API_KEY && !DIAGNOSTIC_FORCE_OPENROUTER) {
       try {
         const result = await callGroq(messages, env);
         return json({ ...result, mode, freeOnly: true }, 200, cors);
