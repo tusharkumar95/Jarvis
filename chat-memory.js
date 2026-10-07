@@ -69,20 +69,26 @@
     characterData: true
   });
 
-  const routerHead = document.querySelector(".router-head");
-  if (routerHead && !document.querySelector("#newChatBtn")) {
-    const button = document.createElement("button");
-    button.id = "newChatBtn";
-    button.className = "text-btn";
-    button.type = "button";
-    button.textContent = "New chat";
-    button.title = "Clear this device's saved Jarvis conversation";
-    routerHead.appendChild(button);
+  let button = document.querySelector("#newChatBtn");
+  if (!button) {
+    const routerHead = document.querySelector(".router-head");
+    if (routerHead) {
+      button = document.createElement("button");
+      button.id = "newChatBtn";
+      button.className = "text-btn";
+      button.type = "button";
+      button.textContent = "New chat";
+      routerHead.appendChild(button);
+    }
+  }
 
+  if (button) {
     button.addEventListener("click", () => {
       try { localStorage.removeItem(STORAGE_KEY); } catch {}
       conversation.length = 0;
-      chat.innerHTML = '<div class="message jarvis">Jarvis is online. Ask me anything.</div>';
+      chat.innerHTML = '<div class="message jarvis">New chat started. Your saved personal memories are unchanged.</div>';
+      const input = document.querySelector("#askInput");
+      if (input) input.focus();
     });
   }
 })();
