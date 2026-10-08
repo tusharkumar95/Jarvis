@@ -1,4 +1,4 @@
-const CACHE = "jarvis-shell-v1";
+const CACHE = "jarvis-shell-v2";
 const SHELL = [
   "./",
   "./index.html",
@@ -43,13 +43,13 @@ self.addEventListener("fetch", event => {
           caches.open(CACHE).then(cache => cache.put("./index.html", copy));
           return response;
         })
-        .catch(() => caches.match("./index.html"))
+        .catch(() => caches.match("./index.html", { ignoreSearch: true }))
     );
     return;
   }
 
   event.respondWith(
-    caches.match(request).then(cached => {
+    caches.match(request, { ignoreSearch: true }).then(cached => {
       const network = fetch(request).then(response => {
         if (response && response.ok) {
           const copy = response.clone();
