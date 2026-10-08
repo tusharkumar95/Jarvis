@@ -3,11 +3,36 @@
   const MAX_TASKS = 100;
   const form = document.querySelector("#askForm");
   const chat = document.querySelector("#chat");
+  const home = document.querySelector("#home");
+  if (!form || !chat || !home || typeof conversation === "undefined") return;
+
+  // Build a compact Tasks panel directly on Home so mobile navigation stays simple.
+  if (!document.querySelector("#jarvisTasksPanel")) {
+    const panel = document.createElement("article");
+    panel.id = "jarvisTasksPanel";
+    panel.className = "card glass jarvis-tasks-panel";
+    panel.innerHTML = `
+      <div class="jarvis-tasks-head">
+        <div><p class="eyebrow">TASKS</p><h3>What needs doing</h3></div>
+        <span id="homeTaskCount">0 open</span>
+      </div>
+      <div class="task-entry">
+        <input id="taskInput" type="text" autocomplete="off" placeholder="Add a task…" aria-label="Task" />
+        <input id="taskDate" class="task-entry-date" type="date" aria-label="Due date" />
+        <button id="addTaskBtn" type="button" class="secondary-btn">Add</button>
+      </div>
+      <div id="taskList" class="jarvis-task-list"></div>
+      <p class="jarvis-task-hint">Or tell Ask Jarvis: “Add a task to call the dentist tomorrow.”</p>`;
+    const pulse = home.querySelector(".pulse-grid");
+    if (pulse) pulse.insertAdjacentElement("afterend", panel);
+    else home.appendChild(panel);
+  }
+
   const list = document.querySelector("#taskList");
   const input = document.querySelector("#taskInput");
   const dateInput = document.querySelector("#taskDate");
   const addButton = document.querySelector("#addTaskBtn");
-  if (!form || !chat || !list || !input || !addButton || typeof conversation === "undefined") return;
+  if (!list || !input || !addButton) return;
 
   function readTasks() {
     try {
@@ -74,11 +99,6 @@
     writeTasks(readTasks().filter(t => t.id !== id));
   }
 
-  function openTasks() {
-    const button = document.querySelector('[data-go="tasks"]');
-    if (button) button.click();
-  }
-
   function addBubble(role, text) {
     const div = document.createElement("div");
     div.className = "message " + (role === "user" ? "user" : "jarvis");
@@ -95,7 +115,7 @@
   function taskSummary() {
     const tasks = activeTasks();
     if (!tasks.length) return "You have no open tasks on this device.";
-    return "Your open tasks:\n" + tasks.map((t, i) => `${i + 1}. ${t.text}${t.due ? ` — due ${t.due}` : ""}`).join("\n");
+    return "Your open tasks:\n" + tasks.map((t, i) => `${i + 1}. ${t.text}${t.due ? ` — due ${friendlyDue(t.due)}` : ""}`).join("\n");
   }
 
   function parseCommand(text) {
@@ -126,7 +146,7 @@
       const due = inferDue(command.text);
       const task = addTask(command.text, due);
       if (!task) return addBubble("assistant", "I couldn't create that task.");
-      addBubble("assistant", `Added task: “${task.text}”${task.due ? ` for ${task.due}` : ""}.${command.reminderWord ? " I’ll keep it in Jarvis Tasks; push notifications are not enabled yet." : ""}`);
+      addBubble("assistant", `Added task: “${task.text}”${task.due ? ` for ${friendlyDue(task.due)}` : ""}.${command.reminderWord ? " I’ll keep it in Jarvis Tasks; push notifications are not enabled yet." : ""}`);
       return;
     }
     if (command.type === "list") {
@@ -173,21 +193,25 @@
   function render() {
     const tasks = readTasks();
     const open = tasks.filter(t => !t.done);
-    const homeCount = document.querySelector("#homeTaskCount");
-    if (homeCount) homeCount.textContent = open.length;
+    const count = document.querySelector("#homeTaskCount");
+    if (count) count.textContent = `${open.length} open`;
     list.innerHTML = "";
 
-    if (!tasks.length) {
+    const visible = [...tasks]
+      .sort((a, b) => Number(a.done) - Number(b.done) || String(a.due || "9999").localeCompare(String(b.due || "9999")))
+      .slice(0, 8);
+
+    if (!visible.length) {
       const empty = document.createElement("div");
       empty.className = "empty-state";
-      empty.textContent = "No tasks yet. Add one here or tell Ask Jarvis: “Add a task to …”";
+      empty.textContent = "No tasks yet.";
       list.appendChild(empty);
       return;
     }
 
-    [...tasks].sort((a, b) => Number(a.done) - Number(b.done) || String(a.due || "9999").localeCompare(String(b.due || "9999"))).forEach(task => {
+    visible.forEach(task => {
       const row = document.createElement("div");
-      row.className = "jarvis-task glass" + (task.done ? " done" : "");
+      row.className = "jarvis-task" + (task.done ? " done" : "");
 
       const check = document.createElement("button");
       check.type = "button";
@@ -221,20 +245,17 @@
 
   const style = document.createElement("style");
   style.textContent = `
-    .task-entry{display:grid;grid-template-columns:1fr auto;gap:10px;padding:14px;margin-bottom:14px}
-    .task-entry-main{display:grid;gap:8px}.task-entry input{width:100%;box-sizing:border-box;border:0;outline:0;background:transparent;font:inherit;color:inherit}
-    .task-entry-date{font-size:.9rem;opacity:.8}.task-entry button{align-self:center}
-    .jarvis-task-list{display:grid;gap:10px}.jarvis-task{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 16px}
-    .jarvis-task-check,.jarvis-task-delete{border:0;background:transparent;color:inherit;font:inherit;font-size:1.25rem;cursor:pointer;padding:4px}
-    .jarvis-task-body{display:grid;gap:3px;min-width:0}.jarvis-task-body b{font-weight:650;line-height:1.3}.jarvis-task-body small{opacity:.65}
-    .jarvis-task.done .jarvis-task-body{opacity:.5}.jarvis-task.done .jarvis-task-body b{text-decoration:line-through}
-    @media(max-width:560px){.task-entry{grid-template-columns:1fr}.task-entry button{width:100%}}
+    .jarvis-tasks-panel{margin:14px 0}.jarvis-tasks-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}.jarvis-tasks-head h3{margin:.15rem 0 0}.jarvis-tasks-head>span{opacity:.65;font-size:.9rem;white-space:nowrap}
+    .task-entry{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;padding:10px 0;border-top:1px solid rgba(100,100,100,.12);border-bottom:1px solid rgba(100,100,100,.12);margin-bottom:8px}.task-entry input{min-width:0;border:0;outline:0;background:transparent;font:inherit;color:inherit;padding:8px 4px}.task-entry-date{max-width:145px;font-size:.88rem}.task-entry button{align-self:center}
+    .jarvis-task-list{display:grid}.jarvis-task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(100,100,100,.08)}.jarvis-task:last-child{border-bottom:0}
+    .jarvis-task-check,.jarvis-task-delete{border:0;background:transparent;color:inherit;font:inherit;font-size:1.2rem;cursor:pointer;padding:4px}.jarvis-task-body{display:grid;gap:2px;min-width:0}.jarvis-task-body b{font-weight:600;line-height:1.3}.jarvis-task-body small{opacity:.6}.jarvis-task.done .jarvis-task-body{opacity:.45}.jarvis-task.done .jarvis-task-body b{text-decoration:line-through}.jarvis-task-hint{margin:10px 0 0;opacity:.55;font-size:.82rem}
+    @media(max-width:560px){.task-entry{grid-template-columns:1fr auto}.task-entry-date{grid-column:1}.task-entry button{grid-column:2;grid-row:1 / span 2}}
   `;
   document.head.appendChild(style);
 
   render();
 
-  // Give the AI task context only for task-related questions that were not handled locally.
+  // Give the AI task context only for task-related questions not handled locally.
   const previousFetch = window.fetch.bind(window);
   window.fetch = async function(inputArg, init) {
     const url = typeof inputArg === "string" ? inputArg : String(inputArg?.url || "");
