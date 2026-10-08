@@ -1,9 +1,14 @@
 {
+  "id": "./",
   "name": "Jarvis Personal OS",
   "short_name": "Jarvis",
+  "description": "A private, mobile-first personal AI workspace for tasks, notes, news, learning and projects.",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f4efe7",
   "theme_color": "#f6f2eb",
+  "orientation": "any",
+  "categories": ["productivity", "utilities"],
   "icons": []
 }
