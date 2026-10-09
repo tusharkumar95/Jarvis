@@ -10,6 +10,7 @@
   <title>Jarvis</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="ui-polish.css?v=1" />
 </head>
 <body>
   <div class="ambient a1"></div>
@@ -18,11 +19,11 @@
   <main class="shell">
     <header class="topbar glass">
       <div><p class="eyebrow" id="dateLabel">Today</p><h1>Jarvis</h1></div>
-      <div class="top-actions"><span class="zero-cost">$0 mode</span><button class="icon-btn" id="themeBtn" aria-label="Toggle theme">◐</button></div>
+      <div class="top-actions"><span class="zero-cost">··°</span><button class="icon-btn" id="themeBtn" aria-label="Toggle theme">◐</button></div>
     </header>
 
     <section id="home" class="view active">
-  <div class="hero"><p class="eyebrow">PERSONAL OS</p><h2 id="greeting">Good morning.</h2><p class="subtle">One place for your news, markets, learning, projects and AI.</p></div>
+  <div class="hero"><h2 id="greeting">Good morning.</h2></div>
   <button class="askbar glass" data-go="ask"><span class="spark">✦</span><span>Ask Jarvis anything…</span><span class="arrow">→</span></button>
   <div class="pulse-grid">
     <article class="pulse glass" data-go="briefly"><small>BRIEFLY</small><strong id="homeNewsCount">—</strong><span>fresh stories</span></article>
@@ -43,7 +44,7 @@
 </section>
 
     <section id="ask" class="view">
-  <div class="page-head"><p class="eyebrow">AI ROUTER</p><h2>Ask Jarvis</h2><p class="subtle">One interface. Privacy-first, free model routing behind it.</p></div>
+  <div class="page-head"><h2>Ask Jarvis</h2></div>
   <div class="section-toolbar glass"><span>Conversation</span><button type="button" class="text-btn" id="newChatBtn">＋ New chat</button></div>
   <div class="router-card glass">
     <div class="router-head"><div><small>ROUTER STATUS</small><b>Secure router online</b></div><span class="router-pill">Groq · free</span></div>
@@ -99,6 +100,7 @@
 
   <script src="config.js"></script>
   <script src="app.js"></script>
+  <script src="weather.js?v=1"></script>
   <script src="chat-memory.js?v=3"></script>
   <script src="context-bridge.js?v=1"></script>
   <script src="personal-memory.js?v=1"></script>
