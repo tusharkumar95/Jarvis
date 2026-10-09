@@ -1,0 +1,149 @@
+/* Jarvis UI polish: compact Home + proper mobile chat workspace */
+
+.weather-badge{
+  border:0;
+  background:rgba(109,128,106,.10);
+  color:var(--ink);
+  font-size:12px;
+  font-weight:750;
+  padding:7px 10px;
+  border-radius:999px;
+  min-width:56px;
+  text-align:center;
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.weather-badge.loading{opacity:.55}
+
+/* Home: keep the greeting but stop it taking over the screen. */
+#home.view{padding-top:14px}
+#home .hero{
+  padding:7px 4px 9px;
+  min-height:0;
+}
+#home .hero .eyebrow,
+#home .hero .subtle{display:none}
+#home .hero h2{
+  margin:0;
+  font-size:14px;
+  line-height:1.25;
+  letter-spacing:0;
+  font-weight:650;
+  color:var(--muted);
+}
+#home .askbar{padding:14px 16px;border-radius:20px}
+#home .pulse-grid{margin-top:10px}
+
+/* Ask is a chat workspace, not a long document. */
+#ask.view.active{
+  display:flex;
+  flex-direction:column;
+  height:calc(100dvh - 94px);
+  min-height:500px;
+  padding:10px 2px calc(76px + env(safe-area-inset-bottom));
+  overflow:hidden;
+}
+#ask .page-head{
+  padding:0 4px 7px;
+  flex:0 0 auto;
+}
+#ask .page-head .eyebrow,
+#ask .page-head .subtle{display:none}
+#ask .page-head h2{
+  margin:0;
+  font-size:24px;
+  line-height:1.1;
+  letter-spacing:-.025em;
+}
+#ask .section-toolbar{
+  flex:0 0 auto;
+  padding:8px 12px;
+  min-height:38px;
+  border-radius:15px;
+}
+#ask .router-card{
+  flex:0 0 auto;
+  margin:7px 0 0;
+  padding:11px 13px;
+  border-radius:18px;
+}
+#ask .router-head{align-items:center}
+#ask .router-head small{display:none}
+#ask .router-head b{font-size:12px}
+#ask .router-pill{padding:5px 8px;font-size:9px}
+#ask .provider-row{
+  margin:7px 0 0;
+  gap:5px;
+}
+#ask .provider-row span{
+  padding:5px 7px;
+  border-radius:10px;
+  font-size:10px;
+}
+#ask .router-card p{display:none}
+#ask .jarvis-memory-panel{
+  flex:0 0 auto;
+  margin-top:7px;
+}
+#ask .jarvis-memory-panel summary{padding:9px 12px;font-size:11px}
+
+#ask .chat{
+  flex:1 1 auto;
+  min-height:0;
+  margin-top:8px;
+  padding:12px;
+  border-radius:20px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scroll-padding-bottom:16px;
+}
+#ask .message{
+  margin-bottom:8px;
+  padding:10px 12px;
+  border-radius:16px;
+  line-height:1.4;
+  font-size:14px;
+}
+#ask .composer{
+  position:static !important;
+  bottom:auto !important;
+  flex:0 0 auto;
+  margin-top:8px;
+  padding:6px;
+  border-radius:18px;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 42px 42px;
+  align-items:end;
+  gap:6px;
+  z-index:2;
+  background:var(--glass-strong);
+}
+#ask .composer textarea{
+  min-height:42px;
+  max-height:104px;
+  padding:10px 11px;
+  line-height:1.35;
+  overflow-y:auto;
+}
+#ask .composer button{
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+}
+#ask .voice-btn{width:42px;height:42px}
+
+@media(max-width:700px){
+  .shell{padding:10px 12px 92px}
+  .topbar{top:6px;padding:10px 12px;border-radius:20px}
+  .topbar h1{font-size:20px}
+  .topbar .eyebrow{font-size:9px}
+  #ask.view.active{height:calc(100dvh - 78px);padding-top:8px}
+}
+
+@media(max-width:420px){
+  #ask .page-head h2{font-size:22px}
+  #ask .provider-row{white-space:nowrap;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px}
+  #ask .provider-row span{flex:0 0 auto}
+}
