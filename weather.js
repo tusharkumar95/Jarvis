@@ -1,6 +1,12 @@
 (() => {
-  const badge = document.querySelector('#weatherBadge');
+  const badge = document.querySelector('#weatherBadge') || document.querySelector('.zero-cost');
   if (!badge) return;
+
+  badge.id = 'weatherBadge';
+  badge.classList.remove('zero-cost');
+  badge.classList.add('weather-badge');
+  badge.setAttribute('role', 'button');
+  badge.setAttribute('tabindex', '0');
 
   const CACHE_KEY = 'jarvis-weather-v1';
   const TORONTO = { latitude: 43.6532, longitude: -79.3832, label: 'Toronto' };
@@ -20,7 +26,7 @@
     if (!data || !Number.isFinite(Number(data.temperature))) return;
     const temp = Math.round(Number(data.temperature));
     badge.textContent = `${iconFor(Number(data.code), Number(data.isDay))} ${temp}°`;
-    badge.title = `${data.label || 'Local weather'} · feels like ${Math.round(Number(data.feelsLike ?? data.temperature))}°C`;
+    badge.title = `${data.label || 'Local weather'} · feels like ${Math.round(Number(data.feelsLike ?? data.temperature))}°C · tap to refresh`;
     badge.setAttribute('aria-label', badge.title);
   }
 
@@ -58,17 +64,19 @@
   }
 
   function locateAndRefresh() {
+    badge.classList.add('loading');
+    const done = promise => promise.finally(() => badge.classList.remove('loading'));
     if (!navigator.geolocation) {
-      fetchWeather(TORONTO).catch(() => {});
+      done(fetchWeather(TORONTO).catch(() => {}));
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      position => fetchWeather({
+      position => done(fetchWeather({
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         label: 'Local weather'
-      }).catch(() => fetchWeather(TORONTO).catch(() => {})),
-      () => fetchWeather(TORONTO).catch(() => {}),
+      }).catch(() => fetchWeather(TORONTO).catch(() => {}))),
+      () => done(fetchWeather(TORONTO).catch(() => {})),
       { enableHighAccuracy: false, timeout: 5000, maximumAge: 30 * 60 * 1000 }
     );
   }
@@ -79,7 +87,14 @@
 
   locateAndRefresh();
   badge.addEventListener('click', locateAndRefresh);
+  badge.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      locateAndRefresh();
+    }
+  });
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && (!cached?.updated || Date.now() - cached.updated > 30 * 60 * 1000)) locateAndRefresh();
+    const latest = readCache();
+    if (document.visibilityState === 'visible' && (!latest?.updated || Date.now() - latest.updated > 30 * 60 * 1000)) locateAndRefresh();
   });
 })();
