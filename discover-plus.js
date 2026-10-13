@@ -10,12 +10,12 @@
   function write(value){try{localStorage.setItem(KEY,JSON.stringify(value))}catch{}}
   function interests(){const v=read(KEY);return Array.isArray(v)?v:[];}
   function scoreMap(){const m=new Map();interests().forEach(x=>m.set(String(x.name||""),Number(x.score)||0));return m;}
-  function bump(name,delta=1){const list=interests();const hit=list.find(x=>String(x.name||"").toLowerCase()===name.toLowerCase());if(hit)hit.score=(Number(hit.score)||0)+delta;else list.push({name,score:delta,source:"discover"});write(list.slice(-40));renderChips();}
+  function bump(name,delta=1){const list=interests();const hit=list.find(x=>String(x.name||"").toLowerCase()===name.toLowerCase());if(hit)hit.score=Math.max(0,(Number(hit.score)||0)+delta);else list.push({name,score:Math.max(0,delta),source:"discover"});write(list.slice(-40));renderChips();}
   function signals(){
     const map=scoreMap();
-    const lib=read(LIBRARY_KEY); if(Array.isArray(lib))lib.forEach(item=>(item.topics||[]).forEach(t=>{const k=String(t);map.set(k,(map.get(k)||0)+.5);}));
+    const lib=read(LIBRARY_KEY); if(Array.isArray(lib))lib.forEach(item=>(item.topics||[]).forEach(t=>{const k=String(t);if(k)map.set(k,(map.get(k)||0)+.5);}));
     const learn=read(LEARN_KEY); if(Array.isArray(learn))learn.slice(0,10).forEach(item=>{const k=String(item.topic||"");if(k)map.set(k,(map.get(k)||0)+1;});
-    return [...map.entries()].sort((a,b)=>b[1]-a[1]).map(([name])=>name).filter(Boolean).slice(0,8);
+    return [...map.entries()].filter(([,score])=>score>0).sort((a,b)=>b[1]-a[1]).map(([name])=>name).filter(Boolean).slice(0,8);
   }
 
   const panel=document.createElement("section");
@@ -32,7 +32,7 @@
   const chips=panel.querySelector("#discoverInterestChips"),output=panel.querySelector("#discoverPersonalOutput"),status=panel.querySelector("#discoverPersonalStatus");
   function renderChips(){
     const scores=scoreMap(); chips.innerHTML="";
-    choices.forEach(name=>{const b=document.createElement("button");b.type="button";b.textContent=name;b.className=scores.get(name)>0?"active":"";b.addEventListener("click",()=>{const active=scoreMap().get(name)>0;bump(name,active?-Math.max(1,scoreMap().get(name)||1):2);});chips.appendChild(b);});
+    choices.forEach(name=>{const b=document.createElement("button");b.type="button";b.textContent=name;b.className=scores.get(name)>0?"active":"";b.addEventListener("click",()=>{const current=scoreMap().get(name)||0;bump(name,current>0?-current:2);});chips.appendChild(b);});
   }
   function chosen(){const s=signals();return s.length?s:choices.slice(0,4);}
   async function generate(surprise=false){
