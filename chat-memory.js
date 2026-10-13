@@ -34,7 +34,6 @@
       conversation.push({ ...message });
       addBubble(message);
     });
-    chat.scrollTop = chat.scrollHeight;
   }
   restoring = false;
 
@@ -71,24 +70,29 @@
 
   let button = document.querySelector("#newChatBtn");
   if (!button) {
-    const routerHead = document.querySelector(".router-head");
-    if (routerHead) {
-      button = document.createElement("button");
-      button.id = "newChatBtn";
-      button.className = "text-btn";
-      button.type = "button";
-      button.textContent = "New chat";
-      routerHead.appendChild(button);
-    }
+    button = document.createElement("button");
+    button.id = "newChatBtn";
+    button.type = "button";
   }
 
-  if (button) {
-    button.addEventListener("click", () => {
-      try { localStorage.removeItem(STORAGE_KEY); } catch {}
-      conversation.length = 0;
-      chat.innerHTML = '<div class="message jarvis">New chat started. Your saved personal memories are unchanged.</div>';
-      const input = document.querySelector("#askInput");
-      if (input) input.focus();
-    });
-  }
+  button.className = "new-chat-btn";
+  button.textContent = "+";
+  button.title = "New chat";
+  button.setAttribute("aria-label", "Start a new chat");
+
+  const submit = form.querySelector('button[type="submit"]');
+  if (submit) form.insertBefore(button, submit);
+  else form.appendChild(button);
+
+  const oldToolbar = document.querySelector("#ask .section-toolbar");
+  if (oldToolbar) oldToolbar.remove();
+
+  button.addEventListener("click", () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    conversation.length = 0;
+    chat.innerHTML = '<div class="message jarvis">New chat started. Your saved personal memories are unchanged.</div>';
+    const input = document.querySelector("#askInput");
+    if (input) input.focus();
+    window.scrollTo({ top: document.querySelector("#ask")?.offsetTop || 0, behavior: "smooth" });
+  });
 })();
