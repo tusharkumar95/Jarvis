@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="ui-polish.css?v=3" />
   <link rel="stylesheet" href="library-v2.css?v=1" />
+  <link rel="stylesheet" href="intelligence.css?v=1" />
 </head>
 <body>
   <div class="ambient a1"></div>
@@ -25,6 +26,7 @@
 
     <section id="home" class="view active">
   <div class="hero"><h2 id="greeting">Good morning.</h2></div>
+  <div id="universalSearchMount"></div>
   <button class="askbar glass" data-go="ask"><span class="spark">✦</span><span>Ask Jarvis anything…</span><span class="arrow">→</span></button>
   <div class="pulse-grid">
     <article class="pulse glass" data-go="briefly"><small>BRIEFLY</small><strong id="homeNewsCount">—</strong><span>fresh stories</span></article>
@@ -37,10 +39,12 @@
   </div>
   <h3 class="section-title">Your tools</h3>
   <div class="tool-grid">
+    <button class="tool glass" data-go="learn"><span>🎓</span><b>Learn</b><small>Verified lessons + quizzes</small></button>
+    <button class="tool glass" data-go="spreadsheet"><span>▦</span><b>Spreadsheet Expert</b><small>Excel · VBA · Sheets · Apps Script</small></button>
     <button class="tool glass" data-go="briefly"><span>📰</span><b>Briefly</b><small>Live filtered news</small></button>
     <button class="tool glass" data-go="library"><span>🔖</span><b>Library</b><small>Useful sites Jarvis remembers</small></button>
     <button class="tool glass" data-go="radar"><span>📈</span><b>Investment Radar</b><small>Canada + India</small></button>
-    <button class="tool glass" data-go="discover"><span>🌍</span><b>Discover</b><small>History + geography</small></button>
+    <button class="tool glass" data-go="discover"><span>🌍</span><b>Discover</b><small>Personalized learning</small></button>
     <button class="tool glass" data-go="lab"><span>🧪</span><b>Lab</b><small>Build new apps</small></button>
   </div>
 </section>
@@ -54,6 +58,21 @@
   </div>
   <div class="chat glass" id="chat"><div class="message jarvis">Jarvis is online. Ask me anything.</div></div>
   <form class="composer glass" id="askForm"><textarea id="askInput" rows="1" placeholder="Ask, research, plan, build…"></textarea><button type="submit">↑</button></form>
+</section>
+
+    <section id="learn" class="view">
+  <div class="page-head"><p class="eyebrow">LEARN MODE</p><h2>Learn something properly</h2><p class="subtle">Choose a topic, your level and how much time you have. Jarvis researches, teaches and verifies the lesson before showing it.</p></div>
+  <div class="learn-control glass">
+    <label for="learnTopic">What do you want to learn?</label>
+    <textarea id="learnTopic" rows="2" placeholder="Example: Teach me how interest rates affect the economy"></textarea>
+    <div class="segment-row" aria-label="Learning level"><button type="button" data-learn-level="beginner">Beginner</button><button type="button" class="active" data-learn-level="intermediate">Intermediate</button><button type="button" data-learn-level="advanced">Advanced</button></div>
+    <div class="segment-row" aria-label="Lesson length"><button type="button" data-learn-minutes="5">5 min</button><button type="button" class="active" data-learn-minutes="10">10 min</button><button type="button" data-learn-minutes="20">20 min</button></div>
+    <div class="learn-actions"><button id="learnStart" type="button">✦ Teach me</button><button id="learnQuiz" type="button" class="secondary-btn">Quiz me</button><button id="learnDeeper" type="button" class="secondary-btn">Go deeper</button></div>
+    <p id="learnStatus" class="learn-status">Uses the same verify-or-decline standard as Ask Jarvis.</p>
+  </div>
+  <div id="learnOutput" class="learn-output" hidden></div>
+  <div class="learn-history-head"><h3>Recent learning</h3><span class="subtle">On this device</span></div>
+  <div id="learnHistory" class="learn-history"></div>
 </section>
 
     <section id="briefly" class="view">
@@ -72,7 +91,7 @@
 </section>
 
     <section id="discover" class="view">
-  <div class="page-head"><p class="eyebrow">DISCOVER · DAILY</p><h2>History and geography that don’t feel like homework</h2><p class="subtle">A different story is selected automatically from the date on your device.</p></div>
+  <div class="page-head"><p class="eyebrow">DISCOVER · DAILY</p><h2>Learn something you didn’t know you wanted to know</h2><p class="subtle">Jarvis can now mix your interests with history, geography, science, technology and other useful knowledge.</p></div>
   <article class="story glass">
     <div class="story-meta"><span id="storyCategory"></span><span id="storyReadTime"></span></div>
     <h2 id="storyTitle">Loading…</h2><div id="storyBody"></div>
@@ -114,6 +133,24 @@
   <div id="libraryList" class="library-list"></div>
 </section>
 
+    <section id="spreadsheet" class="view">
+  <div class="page-head spreadsheet-hero"><div><p class="eyebrow">SPREADSHEET EXPERT</p><h2>Ask at expert level</h2><p class="subtle">Excel formulas and modelling, Excel VBA, Google Sheets and Google Apps Script — with official Microsoft/Google references prioritized and Jarvis verification on factual answers.</p></div><span class="expert-badge">Expert mode</span></div>
+  <div class="spreadsheet-ask-card glass">
+    <div class="spreadsheet-modes"><button class="active" type="button" data-sheet-mode="excel">Excel</button><button type="button" data-sheet-mode="vba">Excel VBA</button><button type="button" data-sheet-mode="sheets">Google Sheets</button><button type="button" data-sheet-mode="apps">Apps Script</button></div>
+    <label for="spreadsheetQuestion">Your question</label>
+    <textarea id="spreadsheetQuestion" rows="4" placeholder="Ask an expert Microsoft Excel formulas/features question…"></textarea>
+    <div class="sheet-examples"><button type="button" data-sheet-example="Rewrite this formula to be faster and easier to maintain: ">Optimize formula</button><button type="button" data-sheet-example="Explain the best way to automate this task and give me production-quality code: ">Build automation</button><button type="button" data-sheet-example="Debug this and explain exactly why it fails: ">Debug</button></div>
+    <div class="spreadsheet-actions"><button id="spreadsheetAsk" type="button">✦ Ask Spreadsheet Expert</button></div>
+    <p id="spreadsheetStatus" class="spreadsheet-status">Official documentation is treated as the primary authority when Jarvis can retrieve it.</p>
+  </div>
+  <div id="spreadsheetOutput" class="spreadsheet-output" hidden></div>
+  <article class="spreadsheet-tip glass">
+    <div class="spreadsheet-tip-top"><span id="spreadsheetTipMode">Excel</span><button id="spreadsheetAnotherTip" type="button">Another tip</button></div>
+    <p class="eyebrow">DAILY ADVANCED TIP</p><h3 id="spreadsheetTipTitle"></h3><p id="spreadsheetTipBody"></p><pre id="spreadsheetTipCode"></pre>
+    <div class="spreadsheet-reference-note">Tips rotate across Excel, VBA, Google Sheets and Apps Script and focus on techniques that are easy to miss in normal beginner tutorials.</div>
+  </article>
+</section>
+
     <section id="lab" class="view">
   <div class="page-head"><p class="eyebrow">LAB</p><h2>Build something new</h2><p class="subtle">Capture app ideas here. Jarvis remembers them on this device.</p></div>
   <div class="builder glass"><label for="idea">What do you want to make?</label><textarea id="idea" rows="5" placeholder="Example: An app where I photograph grocery receipts and it remembers the price of every item…"></textarea><div class="builder-actions"><button id="startBuild">✦ Save project</button><span>Stored locally on this device</span></div></div>
@@ -130,6 +167,7 @@
   </nav>
 
   <script src="config.js"></script>
+  <script src="answer-ui.js?v=1"></script>
   <script src="app.js"></script>
   <script src="weather.js?v=1"></script>
   <script src="chat-memory.js?v=4"></script>
@@ -139,6 +177,10 @@
   <script src="today.js?v=1"></script>
   <script src="capture.js?v=1"></script>
   <script src="library-v2.js?v=1"></script>
+  <script src="learn.js?v=1"></script>
+  <script src="discover-plus.js?v=1"></script>
+  <script src="spreadsheet.js?v=1"></script>
+  <script src="universal-search.js?v=1"></script>
   <script src="pwa.js?v=1"></script>
 </body>
 </html>
