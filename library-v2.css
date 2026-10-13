@@ -1,0 +1,283 @@
+/* Jarvis Library v2 — mobile-first saved-resource UI */
+#library.view{
+  max-width:760px;
+  margin:0 auto;
+  padding-top:24px;
+  padding-bottom:28px;
+}
+#library .library-head{
+  padding:2px 3px 16px;
+}
+#library .library-head .eyebrow{
+  margin-bottom:7px;
+}
+#library .library-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+#library .library-head h2{
+  margin:0;
+  font-size:clamp(30px,8vw,42px);
+  line-height:1.02;
+  letter-spacing:-.04em;
+}
+#library .library-head .subtle{
+  margin:10px 0 0;
+  max-width:600px;
+  font-size:14px;
+  line-height:1.5;
+}
+.library-count-pill{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:32px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(109,128,106,.11);
+  color:var(--accent2);
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.library-save{
+  padding:16px;
+  border-radius:24px;
+  min-width:0;
+}
+.library-save-heading{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin-bottom:14px;
+}
+.library-save-icon{
+  width:38px;
+  height:38px;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  flex:0 0 38px;
+  background:rgba(185,101,72,.10);
+  color:var(--accent);
+  font-size:22px;
+  line-height:1;
+}
+.library-save-heading strong,
+.library-save-heading span{display:block}
+.library-save-heading strong{font-size:16px;letter-spacing:-.01em}
+.library-save-heading span{margin-top:2px;color:var(--muted);font-size:11px;line-height:1.35}
+.library-field{display:grid;gap:6px;margin-top:10px}
+.library-field label{
+  padding-left:2px;
+  font-size:10px;
+  letter-spacing:.08em;
+  font-weight:800;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+.library-field label span{font-weight:600;letter-spacing:0;text-transform:none;opacity:.75}
+.library-field input,
+.library-field textarea,
+.library-search{
+  width:100%;
+  min-width:0;
+  border:1px solid var(--line);
+  outline:0;
+  background:rgba(127,127,127,.055);
+  color:var(--ink);
+  border-radius:15px;
+  padding:12px 13px;
+  font:inherit;
+  font-size:16px;
+  line-height:1.35;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.library-field textarea{resize:none;min-height:62px;max-height:110px}
+.library-field input:focus,
+.library-field textarea:focus,
+.library-search:focus{
+  border-color:rgba(185,101,72,.35);
+  box-shadow:0 0 0 3px rgba(185,101,72,.07);
+}
+.library-save-button{
+  width:100%;
+  min-height:46px;
+  margin-top:12px;
+  border:0;
+  border-radius:15px;
+  background:var(--ink);
+  color:var(--bg);
+  font:inherit;
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+}
+.library-save-button:disabled{opacity:.55}
+.library-status{
+  min-height:18px;
+  margin:9px 2px 0;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.4;
+}
+.library-status.error{color:var(--accent)}
+
+.library-tools{
+  display:flex;
+  align-items:center;
+  margin:13px 0 9px;
+}
+.library-search-wrap{
+  position:relative;
+  width:100%;
+}
+.library-search-wrap>span{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--muted);
+  font-size:16px;
+  pointer-events:none;
+}
+.library-search{padding-left:36px;background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+
+.library-list{display:grid;gap:10px}
+.library-item{
+  padding:15px;
+  border-radius:22px;
+  min-width:0;
+  overflow:hidden;
+}
+.library-item-top{
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) 32px;
+  align-items:center;
+  gap:10px;
+}
+.library-site-mark{
+  width:40px;
+  height:40px;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  background:rgba(109,128,106,.11);
+  color:var(--accent2);
+  font-size:15px;
+  font-weight:850;
+  text-transform:uppercase;
+}
+.library-site-copy{min-width:0}
+.library-site-copy small{
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.library-site-copy h3{
+  margin:2px 0 0;
+  font-size:17px;
+  line-height:1.2;
+  letter-spacing:-.015em;
+  overflow-wrap:anywhere;
+}
+.library-delete{
+  width:32px;
+  height:32px;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:var(--muted);
+  font:inherit;
+  font-size:21px;
+  cursor:pointer;
+}
+.library-description{
+  margin:11px 0 0;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+  overflow-wrap:anywhere;
+}
+.library-note{
+  margin:10px 0 0;
+  padding:9px 11px;
+  border-radius:13px;
+  background:rgba(127,127,127,.055);
+  font-size:12px;
+  line-height:1.4;
+}
+.library-note::before{content:"Why you saved it · ";font-weight:800;color:var(--muted)}
+.library-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.library-tags span{
+  padding:5px 8px;
+  border-radius:999px;
+  background:rgba(109,128,106,.10);
+  color:var(--accent2);
+  font-size:10px;
+  line-height:1.15;
+}
+.library-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin-top:13px;
+}
+.library-actions a,
+.library-actions button{
+  min-width:0;
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--line);
+  border-radius:13px;
+  padding:8px 10px;
+  background:transparent;
+  color:var(--ink);
+  font:inherit;
+  font-size:11px;
+  font-weight:750;
+  text-decoration:none;
+  text-align:center;
+  cursor:pointer;
+}
+.library-actions a{background:var(--ink);color:var(--bg);border-color:transparent}
+.library-empty{
+  margin-top:4px;
+  padding:26px 18px;
+  border:1px dashed var(--line);
+  border-radius:22px;
+  text-align:center;
+  color:var(--muted);
+}
+.library-empty-icon{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  margin:0 auto 9px;
+  border-radius:14px;
+  background:rgba(109,128,106,.09);
+  font-size:20px;
+}
+.library-empty b{display:block;color:var(--ink);font-size:14px}
+.library-empty span{display:block;margin-top:4px;font-size:12px;line-height:1.45}
+
+@media(max-width:560px){
+  #library.view{padding-top:18px}
+  #library .library-head{padding-bottom:13px}
+  #library .library-head h2{font-size:31px}
+  #library .library-head .subtle{font-size:13px;line-height:1.45}
+  .library-count-pill{min-height:29px;padding:5px 9px;font-size:10px}
+  .library-save{padding:14px;border-radius:21px}
+  .library-actions{grid-template-columns:1fr}
+}
