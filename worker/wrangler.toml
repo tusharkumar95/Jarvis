@@ -1,5 +1,5 @@
 name = "jarvis-ai-router"
-main = "verified.js"
+main = "expert.js"
 compatibility_date = "2026-09-25"
 
 # Secrets are added in Cloudflare, never here.
