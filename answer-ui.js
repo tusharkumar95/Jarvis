@@ -140,15 +140,21 @@
     chat.querySelectorAll(".message.jarvis").forEach(enhanceMessage);
     new MutationObserver(mutations => {
       mutations.forEach(m => {
-        if (m.type === "characterData") enhanceMessage(m.target.parentElement?.closest?.(".message.jarvis"));
-        m.addedNodes.forEach(node => {
-          if (node.nodeType !== 1) return;
-          if (node.matches?.(".message.jarvis")) enhanceMessage(node);
-          node.querySelectorAll?.(".message.jarvis").forEach(enhanceMessage);
-        });
-        if (m.target?.nodeType === 1 && m.target.matches?.(".message.jarvis")) {
-          m.target.dataset.answerEnhanced = "0";
-          enhanceMessage(m.target);
+        if (m.type === "characterData") {
+          const msg = m.target.parentElement?.closest?.(".message.jarvis");
+          if (msg?.dataset.answerEnhanced !== "1") enhanceMessage(msg);
+          return;
+        }
+        if (m.type === "childList") {
+          const targetMsg = m.target?.nodeType === 1 && m.target.matches?.(".message.jarvis") ? m.target : null;
+          if (targetMsg && targetMsg.dataset.answerEnhanced !== "1") enhanceMessage(targetMsg);
+          m.addedNodes.forEach(node => {
+            if (node.nodeType !== 1) return;
+            if (node.matches?.(".message.jarvis") && node.dataset.answerEnhanced !== "1") enhanceMessage(node);
+            node.querySelectorAll?.(".message.jarvis").forEach(msg => {
+              if (msg.dataset.answerEnhanced !== "1") enhanceMessage(msg);
+            });
+          });
         }
       });
     }).observe(chat, { childList:true, subtree:true, characterData:true });
@@ -161,7 +167,8 @@
       element.dataset.rawText = String(text || "");
       element.innerHTML = render(text);
       element.classList.add("answer-body");
-      element.toggleAttribute("data-verified", meta.verified === true);
+      if (meta.verified === true) element.dataset.verified = "true";
+      else delete element.dataset.verified;
     }
   };
 
