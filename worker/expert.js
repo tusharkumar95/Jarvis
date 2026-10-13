@@ -70,6 +70,7 @@ export default {
       "Do not invent function availability, syntax, VBA members, Apps Script methods, limits, version support, or product behavior.",
       "If the exact current behavior is not established by the supplied references, say what is uncertain instead of guessing.",
       "For Excel formulas: give the exact formula first when possible, then explain references, spill behavior, compatibility, edge cases, and a robust alternative when useful.",
+      "For Power Query: distinguish worksheet formulas from M. Explain query folding, types, evaluation and refresh implications when relevant.",
       "For VBA: prefer explicit workbook/worksheet/range qualification, avoid unnecessary Select/Activate, use arrays for large data transfers, restore Application state after errors, and explain object-model assumptions.",
       "For Google Sheets: distinguish Sheets-only functions from Excel behavior when relevant and explain array behavior and locale/version caveats when they matter.",
       "For Apps Script: prefer batch getValues/setValues-style operations over cell-by-cell service calls, discuss quotas/authorization/triggers when relevant, and give production-quality error-conscious JavaScript.",
@@ -113,12 +114,37 @@ function areaLabel(area) {
 }
 
 async function fetchOfficialContext(area, question) {
-  const sources = [...(OFFICIAL[area] || OFFICIAL.excel)];
-  if (area === "vba") {
-    if (/\bfind\b/i.test(question)) sources.push(["Microsoft Learn — Range.Find", "https://learn.microsoft.com/en-us/office/vba/api/excel.range.find"]);
-    else if (/\brange\b|cells\b/i.test(question)) sources.push(["Microsoft Learn — Range object", "https://learn.microsoft.com/en-us/office/vba/api/excel.range(object)"]);
+  let sources = [...(OFFICIAL[area] || OFFICIAL.excel)];
+  const q = String(question || "");
+
+  if (area === "excel" && /power query|\bm language\b|\bquery folding\b/i.test(q)) {
+    sources = [
+      ["Microsoft Learn — Power Query M formula language", "https://learn.microsoft.com/en-us/powerquery-m/"],
+      ["Microsoft Learn — Power Query M language introduction", "https://learn.microsoft.com/en-us/powerquery-m/m-spec-introduction"]
+    ];
   }
-  const results = await Promise.all(sources.slice(0, 3).map(([name, url]) => fetchReference(name, url)));
+
+  if (area === "vba") {
+    if (/\bfind\b/i.test(q)) sources.unshift(["Microsoft Learn — Range.Find", "https://learn.microsoft.com/en-us/office/vba/api/excel.range.find"]);
+    else if (/\brange\b|cells\b/i.test(q)) sources.unshift(["Microsoft Learn — Range object", "https://learn.microsoft.com/en-us/office/vba/api/excel.range(object)"]);
+  }
+
+  if (area === "apps") {
+    if (/lockservice|concurr|race condition/i.test(q)) sources.unshift(["Google for Developers — LockService", "https://developers.google.com/apps-script/reference/lock/lock-service"]);
+    else if (/propertiesservice|script properties|user properties|document properties/i.test(q)) sources.unshift(["Google for Developers — PropertiesService", "https://developers.google.com/apps-script/reference/properties/properties-service"]);
+    else if (/trigger|onedit|onopen/i.test(q)) sources.unshift(["Google for Developers — Installable triggers", "https://developers.google.com/apps-script/guides/triggers/installable"]);
+    else if (/range|getvalues|setvalues|getvalue|setvalue/i.test(q)) sources.unshift(["Google for Developers — Spreadsheet Range", "https://developers.google.com/apps-script/reference/spreadsheet/range"]);
+  }
+
+  const deduped = [];
+  const seen = new Set();
+  for (const source of sources) {
+    if (seen.has(source[1])) continue;
+    seen.add(source[1]);
+    deduped.push(source);
+  }
+
+  const results = await Promise.all(deduped.slice(0, 2).map(([name, url]) => fetchReference(name, url)));
   const usable = results.filter(Boolean);
   if (!usable.length) return "";
   return [
@@ -136,8 +162,8 @@ async function fetchReference(name, url) {
       }
     }, 4500);
     if (!response.ok) return null;
-    const raw = (await response.text()).slice(0, 180000);
-    const text = htmlToText(raw).slice(0, 6200);
+    const raw = (await response.text()).slice(0, 120000);
+    const text = htmlToText(raw).slice(0, 2400);
     return text ? { name, url, text } : null;
   } catch {
     return null;
