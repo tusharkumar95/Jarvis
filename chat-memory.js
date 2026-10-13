@@ -54,7 +54,7 @@
       const history = [...chat.querySelectorAll(".message")]
         .map(node => ({
           role: node.classList.contains("user") ? "user" : "assistant",
-          content: node.textContent.trim()
+          content: String(node.dataset.rawText || node.textContent || "").trim()
         }))
         .filter(m => !shouldSkip(m.content))
         .slice(-MAX_MESSAGES);
