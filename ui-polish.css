@@ -1,6 +1,8 @@
-/* Jarvis UI polish: compact Home + smooth mobile Ask */
+/* Jarvis UI polish: compact Home + smooth mobile Ask + whole-app consistency */
 
-html,body{overflow-x:hidden}
+html,body{overflow-x:hidden;-webkit-text-size-adjust:100%}
+button,input,textarea{font-family:inherit;-webkit-tap-highlight-color:transparent}
+button{touch-action:manipulation}
 
 .weather-badge{
   border:0;
@@ -18,7 +20,16 @@ html,body{overflow-x:hidden}
 }
 .weather-badge.loading{opacity:.55}
 
-/* Home stays compact. */
+/* Global mobile rhythm. */
+.view{min-width:0}
+.page-head{padding:8px 4px 14px}
+.page-head h2{font-size:clamp(30px,8vw,46px);margin:5px 0 7px;line-height:1.04}
+.page-head .subtle{margin:0;font-size:14px}
+.card,.market-card,.news-item,.story,.builder,.project{min-width:0}
+.text-btn,.secondary-btn,.primary-link{min-height:38px;display:inline-flex;align-items:center}
+.secondary-btn{justify-content:center}
+
+/* Home stays useful without repeating the same content twice. */
 #home.view{padding-top:14px}
 #home .hero{padding:7px 4px 9px;min-height:0}
 #home .hero .eyebrow,#home .hero .subtle{display:none}
@@ -32,6 +43,26 @@ html,body{overflow-x:hidden}
 }
 #home .askbar{padding:14px 16px;border-radius:20px}
 #home .pulse-grid{margin-top:10px}
+/* Today already carries the Discover + Briefly preview, so hide the duplicate large pair. */
+#home>.grid.two{display:none}
+#home .section-title{margin-top:22px}
+#home .jarvis-today,
+#home .jarvis-tasks-panel,
+#home .jarvis-capture-panel{
+  min-height:0 !important;
+  margin:10px 0 !important;
+  padding:16px !important;
+  border-radius:22px !important;
+}
+#home .jarvis-today-grid{gap:7px;margin-top:10px}
+#home .jarvis-today-block{padding:9px 10px;border-radius:14px}
+#home .jarvis-today-ask{margin-top:9px;padding:10px 12px}
+#home .jarvis-tasks-head,#home .jarvis-capture-head{margin-bottom:7px}
+#home .jarvis-tasks-head h3,#home .jarvis-capture-head h3,#home .jarvis-today-head h3{font-size:18px;margin:.1rem 0 0}
+#home .task-entry,#home .jarvis-capture-entry{padding:7px 0;margin-top:6px}
+#home .jarvis-task,#home .jarvis-capture-row{padding:8px 0}
+#home .empty-state{padding:16px}
+#home .jarvis-task-hint,#home .jarvis-capture-hint{margin-top:7px;font-size:12px}
 
 /* Ask is one normal vertical page: no nested scrolling box. */
 #ask.view.active{
@@ -44,21 +75,22 @@ html,body{overflow-x:hidden}
 #ask .page-head{display:none}
 #ask .section-toolbar{display:none !important}
 
-/* Keep router status visible but tiny. */
+/* Tiny status; it should never compete with the answer. */
 #ask .router-card{
-  margin:0 0 7px;
-  padding:9px 11px;
-  border-radius:16px;
+  margin:0 0 6px;
+  padding:7px 9px;
+  border-radius:14px;
+  box-shadow:none;
 }
 #ask .router-head{align-items:center}
 #ask .router-head small{display:none}
-#ask .router-head b{font-size:12px}
-#ask .router-pill{padding:5px 8px;font-size:9px}
+#ask .router-head b{font-size:11px;font-weight:650}
+#ask .router-pill{padding:4px 7px;font-size:9px}
 #ask .provider-row{display:none}
 #ask .router-card p{display:none}
 
-#ask .jarvis-memory-panel{margin:0 0 5px}
-#ask .jarvis-memory-panel summary{padding:8px 10px;font-size:11px}
+#ask .jarvis-memory-panel{margin:0 0 5px;box-shadow:none}
+#ask .jarvis-memory-panel summary{padding:7px 9px;font-size:11px;min-height:34px}
 
 /* Conversation itself is not a card. */
 #ask .chat{
@@ -107,7 +139,7 @@ html,body{overflow-x:hidden}
 /* Composer stays available while the whole page scrolls vertically. */
 #ask .composer{
   position:sticky !important;
-  bottom:calc(82px + env(safe-area-inset-bottom)) !important;
+  bottom:calc(72px + env(safe-area-inset-bottom)) !important;
   margin-top:8px;
   padding:6px;
   border-radius:18px;
@@ -144,15 +176,73 @@ html,body{overflow-x:hidden}
   padding:0 !important;
 }
 
+/* Briefly: compact readable news cards. */
+#briefly .section-toolbar{padding:10px 12px;border-radius:16px}
+#briefly .news-list{gap:9px;margin-top:10px}
+#briefly .news-item{padding:15px;border-radius:20px}
+#briefly .news-item h3{font-size:17px;margin:8px 0 6px}
+#briefly .news-item p{font-size:13px;line-height:1.48}
+#briefly .news-source{margin-top:8px}
+
+/* Discover: preserve the editorial feel without oversized mobile typography. */
+#discover .story{padding:clamp(20px,4vw,38px)}
+#discover .story h2{font-size:clamp(31px,7vw,52px);margin:12px 0 20px}
+#discover .fact,#discover .why{margin:22px 0;padding:17px}
+#discover .quiz{margin-top:24px}
+#discover .choices button{min-height:42px}
+
+/* Lab / Radar: reduce unnecessary vertical bulk. */
+#lab .builder{padding:18px;border-radius:22px}
+#lab .builder label{font-size:19px}
+#lab .builder textarea{min-height:110px;margin:12px 0}
+#lab .projects-head{margin-top:20px}
+#radar .market-card{padding:20px;border-radius:22px}
+#radar .market-card h3{font-size:22px}
+#radar .market-flag{font-size:29px;margin-bottom:11px}
+
+/* Bottom navigation should feel anchored, not dominate the screen. */
+.bottom-nav{
+  width:min(460px,calc(100% - 20px));
+  border-radius:23px;
+  padding:5px;
+  bottom:max(8px,env(safe-area-inset-bottom));
+}
+.nav{padding:6px 4px;border-radius:17px;min-height:48px}
+.nav span{font-size:18px}
+.nav small{font-size:9px;margin-top:2px}
+
 @media(max-width:700px){
-  .shell{padding:10px 12px 92px}
-  .topbar{top:6px;padding:10px 12px;border-radius:20px}
+  .shell{padding:10px 12px 86px}
+  .topbar{top:6px;padding:9px 11px;border-radius:19px}
   .topbar h1{font-size:20px}
   .topbar .eyebrow{font-size:9px}
+  .icon-btn{padding:8px}
   #ask.view.active{padding-top:7px}
+  .tool{min-height:112px;padding:14px}
+  .tool span{font-size:23px;margin-bottom:12px}
+  .card{min-height:0}
+  #briefly .section-toolbar{align-items:center;flex-direction:row}
+}
+
+@media(max-width:560px){
+  /* 16px prevents iOS focus zoom on text/date inputs. */
+  #askInput,#taskInput,#captureInput,#idea,.task-entry-date{font-size:16px !important}
+  .page-head h2{font-size:30px}
+  .page-head{padding-top:5px}
+  #home .jarvis-today-grid{grid-template-columns:1fr}
+  #home .jarvis-today-block{grid-template-columns:auto minmax(0,1fr);column-gap:9px}
+  #home .jarvis-today-block small{grid-column:1}
+  #home .jarvis-today-block b{grid-column:2;grid-row:1}
+  #home .jarvis-today-block span{grid-column:2;grid-row:2}
+  #discover .story{font-size:16.5px;line-height:1.65}
 }
 
 @media(max-width:420px){
   #ask .message{font-size:15px}
   #ask .message.user{max-width:92%}
+  .pulse{padding:10px 9px}
+  .pulse strong{font-size:21px;margin-top:6px}
+  .tool-grid{gap:8px}
+  .tool{padding:13px;min-height:106px}
+  #briefly .section-toolbar{gap:8px;font-size:11px}
 }
