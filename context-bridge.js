@@ -2,13 +2,19 @@
   const nativeFetch = window.fetch.bind(window);
   const LAB_KEY = "jarvis-lab-projects-v1";
   let brieflyStories = [];
+  let brieflyMeta = {};
 
   async function refreshBriefly() {
     try {
       const response = await nativeFetch("../Briefly/data.json?jarvisContext=" + Date.now(), { cache: "no-store" });
       if (!response.ok) return;
       const data = await response.json();
-      brieflyStories = Array.isArray(data?.stories) ? data.stories.slice(0, 8) : [];
+      brieflyStories = Array.isArray(data?.stories) ? data.stories.slice(0, 10) : [];
+      brieflyMeta = {
+        updated: data?.updated || "",
+        engine: data?.engine || "",
+        editor: data?.editor || ""
+      };
     } catch {}
   }
 
@@ -36,8 +42,20 @@
     const title = String(story?.title || "Untitled").trim();
     const source = String(story?.source || "Briefly").trim();
     const category = String(story?.cat || story?.category || "News").trim();
-    const summary = String(story?.summary || "").trim().slice(0, 280);
-    return `${index + 1}. [${category}] ${title} — ${source}${summary ? ` — ${summary}` : ""}`;
+    const summary = String(story?.summary || "").trim().slice(0, 430);
+    const why = String(story?.why || "").trim().slice(0, 220);
+    const sourceCount = Math.max(1, Number(story?.sourceCount || story?.sources?.length || 1));
+    const score = Number(story?.importanceScore || 0);
+    const trust = story?.verified === true ? "verified" : `source-backed/${String(story?.confidence || "unknown")}`;
+    const status = String(story?.status || "").trim();
+    const parts = [
+      `${index + 1}. [${category}] ${title}`,
+      `source: ${source}${sourceCount > 1 ? ` (${sourceCount} sources)` : ""}`,
+      `trust: ${trust}${score ? `; importance ${score}` : ""}${status ? `; ${status}` : ""}`,
+      summary ? `summary: ${summary}` : "",
+      why ? `why it matters: ${why}` : ""
+    ].filter(Boolean);
+    return parts.join(" — ");
   }
 
   function buildContext(question) {
@@ -45,7 +63,7 @@
     const q = String(question || "");
 
     const wantsProjects = /\b(project|projects|lab|app idea|app ideas|saved idea|saved ideas|my ideas|build idea|build ideas)\b/i.test(q);
-    const wantsNews = /\b(briefly|news|headline|headlines|latest story|latest stories|news story|news stories|today.?s news|current news)\b/i.test(q);
+    const wantsNews = /\b(briefly|news|headline|headlines|latest story|latest stories|news story|news stories|today.?s news|current news|what happened|overnight|what matters today|important today)\b/i.test(q);
 
     if (wantsProjects) {
       const projects = labProjects();
@@ -57,16 +75,21 @@
     }
 
     if (wantsNews) {
+      const meta = [
+        brieflyMeta.engine ? `engine=${brieflyMeta.engine}` : "",
+        brieflyMeta.updated ? `updated=${brieflyMeta.updated}` : "",
+        brieflyMeta.editor ? `editor=${brieflyMeta.editor}` : ""
+      ].filter(Boolean).join("; ");
       sections.push(
         brieflyStories.length
-          ? `Current Briefly feed:\n${brieflyStories.slice(0, 6).map(storyLine).join("\n")}`
+          ? `Current Briefly intelligence feed${meta ? ` (${meta})` : ""}:\n${brieflyStories.slice(0, 8).map(storyLine).join("\n")}`
           : "Current Briefly feed: unavailable right now."
       );
     }
 
     if (!sections.length) return "";
     return [
-      "JARVIS APP CONTEXT (use only when relevant to the user's question; do not claim this context is broader than shown):",
+      "JARVIS APP CONTEXT (use only when relevant to the user's question; do not claim this context is broader than shown. Respect each story's verification/trust label and do not upgrade source-backed items to verified facts without independent support):",
       ...sections
     ].join("\n\n");
   }
