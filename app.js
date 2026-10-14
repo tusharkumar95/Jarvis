@@ -44,7 +44,7 @@ function newsCard(s,i){
 async function summarizeJarvisNews(index){
   const s=jarvisNews[index], el=document.getElementById("jarvis-news-summary-"+index);
   if(!s||!el)return;
-  const base=String(window.JARVIS_API||"").replace(/\\/$/,"");
+  const base=String(window.JARVIS_API||"").replace(/\/$/,"");
   if(!base){el.textContent="Jarvis AI router is not configured.";return;}
   el.textContent="Jarvis is checking the story…";
   try{

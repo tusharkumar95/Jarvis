@@ -14,7 +14,7 @@
   function signals(){
     const map=scoreMap();
     const lib=read(LIBRARY_KEY); if(Array.isArray(lib))lib.forEach(item=>(item.topics||[]).forEach(t=>{const k=String(t);if(k)map.set(k,(map.get(k)||0)+.5);}));
-    const learn=read(LEARN_KEY); if(Array.isArray(learn))learn.slice(0,10).forEach(item=>{const k=String(item.topic||"");if(k)map.set(k,(map.get(k)||0)+1;});
+    const learn=read(LEARN_KEY); if(Array.isArray(learn))learn.slice(0,10).forEach(item=>{const k=String(item.topic||"");if(k)map.set(k,(map.get(k)||0)+1);});
     return [...map.entries()].filter(([,score])=>score>0).sort((a,b)=>b[1]-a[1]).map(([name])=>name).filter(Boolean).slice(0,8);
   }
 
