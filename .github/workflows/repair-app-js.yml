@@ -1,0 +1,45 @@
+name: Repair app.js
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair malformed trailing-slash regex
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('app.js')
+          s = p.read_text()
+          bad = 'replace(/\\\\/$/,"")'
+          good = 'replace(/\\/$/,"")'
+          if bad not in s:
+              print('Malformed regex not found; no repair needed.')
+          else:
+              p.write_text(s.replace(bad, good))
+              print('Repaired malformed regex.')
+          PY
+      - name: Syntax check JavaScript
+        run: |
+          set -e
+          for f in *.js; do echo "Checking $f"; node --check "$f"; done
+          for f in worker/*.js; do echo "Checking $f"; node --check "$f"; done
+      - name: Commit repair if needed
+        run: |
+          if git diff --quiet -- app.js; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js
+          git commit -m "Fix app.js syntax regression"
+          git push
