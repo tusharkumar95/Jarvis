@@ -1,4 +1,4 @@
-name: Repair app.js
+name: Repair Jarvis JavaScript
 
 on:
   push:
@@ -13,19 +13,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Repair malformed trailing-slash regex
+      - name: Repair known syntax regressions
         run: |
           python - <<'PY'
           from pathlib import Path
-          p = Path('app.js')
-          s = p.read_text()
+
+          app = Path('app.js')
+          s = app.read_text()
           bad = 'replace(/\\\\/$/,"")'
           good = 'replace(/\\/$/,"")'
-          if bad not in s:
-              print('Malformed regex not found; no repair needed.')
+          if bad in s:
+              app.write_text(s.replace(bad, good))
+              print('Repaired app.js trailing-slash regex.')
           else:
-              p.write_text(s.replace(bad, good))
-              print('Repaired malformed regex.')
+              print('app.js regex already clean.')
+
+          discover = Path('discover-plus.js')
+          d = discover.read_text()
+          bad2 = 'map.set(k,(map.get(k)||0)+1;});'
+          good2 = 'map.set(k,(map.get(k)||0)+1);});'
+          if bad2 in d:
+              discover.write_text(d.replace(bad2, good2))
+              print('Repaired discover-plus.js missing parenthesis.')
+          else:
+              print('discover-plus.js line already clean.')
           PY
       - name: Syntax check JavaScript
         run: |
@@ -34,12 +45,12 @@ jobs:
           for f in worker/*.js; do echo "Checking $f"; node --check "$f"; done
       - name: Commit repair if needed
         run: |
-          if git diff --quiet -- app.js; then
+          if git diff --quiet -- app.js discover-plus.js; then
             echo "No changes to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js
-          git commit -m "Fix app.js syntax regression"
+          git add app.js discover-plus.js
+          git commit -m "Fix Jarvis JavaScript syntax regressions"
           git push
