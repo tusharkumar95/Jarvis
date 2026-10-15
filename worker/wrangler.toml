@@ -1,5 +1,5 @@
 name = "jarvis-ai-router"
-main = "research-plus.js"
+main = "app-builder.js"
 compatibility_date = "2026-09-25"
 
 # Secrets are added in Cloudflare, never here.
