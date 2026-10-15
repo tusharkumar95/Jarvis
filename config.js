@@ -9,6 +9,12 @@ window.addEventListener("load", () => {
     css.dataset.labBuilder = "1";
     document.head.appendChild(css);
   }
+  if (!document.querySelector('script[data-moves-context]')) {
+    const moves = document.createElement("script");
+    moves.src = "moves-context.js?v=1";
+    moves.dataset.movesContext = "1";
+    document.body.appendChild(moves);
+  }
   if (!document.querySelector('script[data-lab-builder]')) {
     const script = document.createElement("script");
     script.src = "lab-builder.js?v=1";
