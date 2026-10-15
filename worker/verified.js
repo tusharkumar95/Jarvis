@@ -63,18 +63,20 @@ export default {
 
     const researchQuestion = originalQuestionForResearch(lastUser);
     const priorContext = messages.slice(Math.max(0, messages.length - 7), Math.max(0, messages.length - 1));
-    const auditPacket = buildAuditPacket({
-      researchQuestion,
-      originalContext: lastUser,
-      draft: String(draft?.text || "")
-    });
+    const specialistContext = String(lastUser).trim() !== String(researchQuestion).trim()
+      ? lastUser
+      : "";
+
+    const auditMessages = [
+      ...priorContext,
+      ...(specialistContext ? [{ role: "user", content: specialistContext }] : []),
+      { role: "assistant", content: `DRAFT TO AUDIT:\n${String(draft?.text || "")}` },
+      { role: "user", content: buildAuditPacket(researchQuestion) }
+    ];
 
     const auditBody = JSON.stringify({
       mode: body.mode === "public" ? "public" : "private",
-      messages: [
-        ...priorContext,
-        { role: "user", content: auditPacket }
-      ]
+      messages: auditMessages
     });
 
     const auditRequest = new Request(request.url, {
@@ -158,44 +160,35 @@ function needsVerification(text) {
   return /\?|\b(tell me|what|who|when|where|why|how|which|is|are|was|were|does|do|did|can|could|should|compare|difference|explain|teach|learn|history|origin|food|nutrition|ingredient|science|research|study|evidence|health|medical|medicine|stock|share|company|brand|product|news|current|latest|today|law|rule|travel|country|city|person|president|ceo|price|cost|recommend|best)\b/i.test(q);
 }
 
-function buildAuditPacket({ researchQuestion, originalContext, draft }) {
-  const specialistContext = String(originalContext || "").trim() !== String(researchQuestion || "").trim()
-    ? `\n\nSPECIALIST OR APP CONTEXT FROM THE DRAFT PASS:\n${originalContext}`
-    : "";
-
+function buildAuditPacket(researchQuestion) {
   return [
     researchQuestion,
     "",
     "JARVIS VERIFICATION CONTEXT",
-    "FACT VERIFICATION AUDIT.",
-    "The text before the JARVIS VERIFICATION CONTEXT marker is the original user question. Use that as the research target.",
-    "You are the second-pass verifier for Jarvis. Do not trust the draft merely because another model produced it.",
-    "Independently check every material factual claim, date, number, named event, causal claim, health/science claim, current fact and source in the draft against the retrieved evidence for the original question and any specialist/app context supplied below.",
-    "If a claim is unsupported, stale, contradicted, overly precise, or cannot be verified from reliable evidence, remove or correct it.",
-    "Do not fill gaps from imagination or uncertain model memory.",
-    "For historical or disputed topics, preserve uncertainty and competing interpretations where the evidence requires it.",
-    "For current/freshness-sensitive questions, if current evidence is unavailable, do not substitute old knowledge.",
-    "For health/science, do not turn a study title into a conclusion and do not overstate causality.",
-    specialistContext,
-    "",
-    "DRAFT TO AUDIT:",
-    draft,
-    "",
-    "OUTPUT CONTRACT:",
-    "If enough reliable evidence remains to answer the core question, output exactly this first line: VERIFIED",
-    "Then provide the complete corrected final answer for the user, including only claims you are willing to stand behind.",
-    "If the core answer cannot be reliably verified, output exactly this first line: UNVERIFIED",
-    "Then give one short sentence explaining what could not be verified. Do not provide the unsupported draft.",
-    "Do not output any other status word before the first line."
-  ].filter(Boolean).join("\n");
+    "FACT CHECK PASS.",
+    "The text before this marker is the user's question and the subject to check.",
+    "Audit the preceding draft against the retrieved evidence.",
+    "Check material factual claims, dates, numbers, names, causal relationships and cited sources.",
+    "Remove or correct anything unsupported, contradicted, overly precise or uncertain.",
+    "Do not fill evidence gaps from model memory.",
+    "When sources disagree, preserve the uncertainty.",
+    "For time-sensitive facts, rely on dated evidence and do not substitute stale information.",
+    "For empirical claims, do not infer causation beyond what the evidence supports.",
+    "If enough evidence remains to answer the core question, output exactly this first line: VERIFIED",
+    "Then provide the complete corrected answer.",
+    "If the core question cannot be supported well enough, output exactly this first line: UNVERIFIED",
+    "Then give one short sentence explaining what could not be established.",
+    "Do not put anything before the status line."
+  ].join("\n");
 }
 
 function parseAudit(text) {
   const clean = String(text || "").trim();
   if (!clean) return { verified: false, answer: "" };
   const lines = clean.split(/\r?\n/);
-  const status = (lines.shift() || "").trim().toUpperCase().replace(/[^A-Z]/g, "");
-  if (status !== "VERIFIED") return { verified: false, answer: "" };
+  const first = (lines.shift() || "").trim();
+  const normalized = first.toUpperCase().replace(/[^A-Z]/g, "");
+  if (normalized !== "VERIFIED") return { verified: false, answer: "" };
   const answer = lines.join("\n").trim();
   if (!answer || /^UNVERIFIED\b/i.test(answer)) return { verified: false, answer: "" };
   return { verified: true, answer };
