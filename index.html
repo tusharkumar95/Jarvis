@@ -14,7 +14,8 @@
   <link rel="stylesheet" href="library-v2.css?v=1" />
   <link rel="stylesheet" href="intelligence.css?v=1" />
   <style>
-    .bottom-nav{grid-template-columns:repeat(2,1fr);width:min(310px,calc(100% - 20px))}
+    .bottom-nav{grid-template-columns:repeat(4,1fr);width:min(460px,calc(100% - 20px))}
+    .bottom-nav .nav small{white-space:nowrap}
   </style>
 </head>
 <body>
@@ -46,10 +47,8 @@
     <button class="tool glass" data-go="spreadsheet"><span>▦</span><b>Spreadsheet Expert</b><small>Excel · VBA · Sheets · Apps Script</small></button>
     <button class="tool glass" data-go="briefly"><span>📰</span><b>Briefly</b><small>Live filtered news</small></button>
     <button class="tool glass" data-go="library"><span>🔖</span><b>Library</b><small>Useful sites Jarvis remembers</small></button>
-    <button class="tool glass" type="button" onclick="window.location.href='../Investment_Radar/'"><span>📈</span><b>Investment Radar</b><small>Canada + India</small></button>
     <button class="tool glass" data-go="discover"><span>🌍</span><b>Discover</b><small>Personalized learning</small></button>
     <button class="tool glass" data-go="lab"><span>🧪</span><b>Lab</b><small>Build new apps</small><span id="homeProjectCount" hidden>0</span></button>
-    <button class="tool glass" type="button" onclick="window.location.href='../PocketSheet/'"><span>📊</span><b>PocketSheet</b><small>Mobile spreadsheet workspace</small></button>
   </div>
 </section>
 
@@ -166,6 +165,8 @@
   <nav class="bottom-nav glass">
     <button class="nav active" data-go="home"><span>⌂</span><small>Home</small></button>
     <button class="nav" data-go="ask"><span>✦</span><small>Ask</small></button>
+    <button class="nav" type="button" onclick="window.location.href='../PocketSheet/'"><span>▦</span><small>PocketSheet</small></button>
+    <button class="nav" type="button" onclick="window.location.href='../Investment_Radar/'"><span>↗</span><small>Investment Radar</small></button>
   </nav>
 
   <script src="config.js"></script>
