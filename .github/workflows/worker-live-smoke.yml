@@ -37,13 +37,14 @@ jobs:
               "verificationGate": True,
               "spreadsheetExpert": True,
               "pubMedAbstractContext": True,
+              "verificationBuild": "static-evidence-v1",
           }
           for key, expected in required.items():
               if data.get(key) != expected:
                   raise SystemExit(1)
           if data.get("verificationResearchTarget") != "original-question":
               raise SystemExit(1)
-          print("Live Jarvis Worker is on the current verified research stack.")
+          print("Live Jarvis Worker is on the exact current verified research stack.")
           PY
             then
               exit 0
