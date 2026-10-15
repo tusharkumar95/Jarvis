@@ -39,7 +39,7 @@ jobs:
               "pubMedAbstractContext": True,
               "verificationBuild": "grounded-second-pass-v3",
               "evidenceGroundedSecondPass": True,
-              "researchRecoveryBuild": "grounded-recovery-v3",
+              "researchRecoveryBuild": "grounded-recovery-v4",
               "groundedEvidenceRecovery": True,
               "groundedRecoveryProviderPath": "direct-evidence-only",
           }
