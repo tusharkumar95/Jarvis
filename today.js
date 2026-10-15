@@ -4,6 +4,7 @@
   if (!home) return;
 
   let briefStories = [];
+  let movesSignals = [];
   let lastUpdated = null;
 
   function localDate(date = new Date()) {
@@ -36,6 +37,18 @@
     return document.querySelector("#homeDiscoverTitle")?.textContent?.trim() || "Today’s Discover story";
   }
 
+  function topMove() {
+    return [...movesSignals]
+      .filter(move => Number(move?.moveScore || 0) >= 45)
+      .sort((a,b) => Number(b?.moveScore || 0) - Number(a?.moveScore || 0))[0] || null;
+  }
+
+  function moveLabel(move) {
+    if (!move) return "No notable move";
+    const actor=move.investor ? `${move.investor} · ` : "";
+    return `${actor}${move.direction === "SELL" ? "sold" : "bought"} ${move.symbol || move.company || ""}`.trim();
+  }
+
   function ensureCard() {
     let card = document.querySelector("#jarvisTodayCard");
     if (card) return card;
@@ -50,6 +63,7 @@
       <div class="jarvis-today-grid">
         <div class="jarvis-today-block"><small>FOCUS</small><b id="todayFocus">Checking tasks…</b><span id="todayFocusMeta"></span></div>
         <div class="jarvis-today-block"><small>BRIEFLY</small><b id="todayNews">Checking news…</b><span id="todayNewsMeta"></span></div>
+        <div class="jarvis-today-block"><small>MOVES</small><b id="todayMove">Checking disclosures…</b><span id="todayMoveMeta"></span></div>
         <div class="jarvis-today-block"><small>DISCOVER</small><b id="todayDiscover">Loading…</b><span>Today’s learning pick</span></div>
       </div>
       <button type="button" class="jarvis-today-ask" id="askAboutToday">✦ Ask Jarvis what to focus on today</button>`;
@@ -78,6 +92,8 @@
     const focusMeta = document.querySelector("#todayFocusMeta");
     const news = document.querySelector("#todayNews");
     const newsMeta = document.querySelector("#todayNewsMeta");
+    const move = document.querySelector("#todayMove");
+    const moveMeta = document.querySelector("#todayMoveMeta");
     const discover = document.querySelector("#todayDiscover");
 
     if (focus) {
@@ -87,7 +103,7 @@
     }
     if (focusMeta) {
       const open = readTasks().filter(t => !t?.done).length;
-      focusMeta.textContent = overdue.length ? `${due.length} for today · ${open} open total` : `${due.length} for today · ${open} open total`;
+      focusMeta.textContent = `${due.length} for today · ${open} open total`;
     }
 
     if (news) news.textContent = briefStories[0]?.title || "No fresh story loaded";
@@ -95,6 +111,10 @@
       const count = briefStories.length;
       newsMeta.textContent = count ? `${count} fresh ${count === 1 ? "story" : "stories"}${lastUpdated ? " · live feed" : ""}` : "Briefly feed unavailable";
     }
+
+    const strongest=topMove();
+    if (move) move.textContent=moveLabel(strongest);
+    if (moveMeta) moveMeta.textContent=strongest ? `${strongest.market || ""} · ${strongest.signal || "Notable"} · ${Number(strongest.moveScore || 0)}/100` : "No high-signal disclosure loaded";
     if (discover) discover.textContent = discoverTitle();
   }
 
@@ -111,14 +131,23 @@
     }
   }
 
+  async function refreshMoves() {
+    try {
+      const response=await fetch("../Briefly/moves-intelligence.json?todayMoves="+Date.now(),{cache:"no-store"});
+      if(!response.ok)throw new Error("Moves unavailable");
+      const data=await response.json();
+      movesSignals=Array.isArray(data?.records)?data.records.slice(0,40):[];
+    }catch{movesSignals=[];}
+  }
+
   async function refreshAll() {
-    await refreshBriefly();
+    await Promise.all([refreshBriefly(),refreshMoves()]);
     render();
   }
 
   const style = document.createElement("style");
   style.textContent = `
-    .jarvis-today{margin:14px 0}.jarvis-today-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.jarvis-today-head h3{margin:.15rem 0 0}.jarvis-today-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.jarvis-today-block{padding:12px;border:1px solid rgba(100,100,100,.1);border-radius:16px;display:grid;gap:5px;min-width:0}.jarvis-today-block small{opacity:.55;font-size:.72rem;letter-spacing:.08em}.jarvis-today-block b{font-size:.96rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.jarvis-today-block span{opacity:.6;font-size:.78rem}.jarvis-today-ask{width:100%;margin-top:12px;border:0;border-radius:14px;padding:12px 14px;background:rgba(100,100,100,.08);color:inherit;font:inherit;text-align:left;cursor:pointer}@media(max-width:620px){.jarvis-today-grid{grid-template-columns:1fr}.jarvis-today-block{grid-template-columns:auto 1fr;column-gap:10px}.jarvis-today-block small{grid-column:1}.jarvis-today-block b{grid-column:2;grid-row:1}.jarvis-today-block span{grid-column:2;grid-row:2}}
+    .jarvis-today{margin:14px 0}.jarvis-today-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.jarvis-today-head h3{margin:.15rem 0 0}.jarvis-today-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.jarvis-today-block{padding:12px;border:1px solid rgba(100,100,100,.1);border-radius:16px;display:grid;gap:5px;min-width:0}.jarvis-today-block small{opacity:.55;font-size:.72rem;letter-spacing:.08em}.jarvis-today-block b{font-size:.96rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.jarvis-today-block span{opacity:.6;font-size:.78rem}.jarvis-today-ask{width:100%;margin-top:12px;border:0;border-radius:14px;padding:12px 14px;background:rgba(100,100,100,.08);color:inherit;font:inherit;text-align:left;cursor:pointer}@media(max-width:620px){.jarvis-today-grid{grid-template-columns:1fr 1fr}.jarvis-today-block{min-height:88px}}@media(max-width:390px){.jarvis-today-grid{grid-template-columns:1fr}.jarvis-today-block{min-height:0}}
   `;
   document.head.appendChild(style);
 
@@ -145,13 +174,15 @@
           const due = todayTasks();
           const overdue = overdueTasks();
           const open = readTasks().filter(t => !t?.done);
+          const strongest=topMove();
           const context = [
-            "JARVIS TODAY CONTEXT (device-local dashboard data; use only for this question):",
+            "JARVIS TODAY CONTEXT (device-local dashboard and Briefly intelligence; use only for this question):",
             `Date on device: ${localDate()}`,
             `Overdue tasks: ${overdue.length ? overdue.map((t,i)=>`${i+1}. ${t.text} — due ${t.due}`).join(" | ") : "none"}`,
             `Today/no-date tasks: ${due.length ? due.slice(0,6).map((t,i)=>`${i+1}. ${t.text}${t.due ? ` — due ${t.due}` : ""}`).join(" | ") : "none"}`,
             `Open tasks total: ${open.length}`,
-            `Top Briefly stories: ${briefStories.length ? briefStories.slice(0,3).map((s,i)=>`${i+1}. ${s?.title || "Untitled"}`).join(" | ") : "unavailable"}`,
+            `Top Briefly stories: ${briefStories.length ? briefStories.slice(0,3).map((s,i)=>`${i+1}. ${s?.title || "Untitled"}${s?.why?` — why: ${s.why}`:""}`).join(" | ") : "unavailable"}`,
+            strongest ? `Strongest current Moves signal: ${moveLabel(strongest)} — ${strongest.market || ""}; ${strongest.signal || ""}; Move Score ${Number(strongest.moveScore||0)}/100; why notable: ${strongest.whyNotable || "not supplied"}. Treat this as disclosure intelligence, not a recommendation.` : "Strongest current Moves signal: unavailable",
             `Today’s Discover item: ${discoverTitle()}`
           ].join("\n");
           body.messages = [...messages.slice(0, -1), { role: "user", content: context }, last];
