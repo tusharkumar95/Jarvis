@@ -39,8 +39,9 @@ jobs:
               "pubMedAbstractContext": True,
               "verificationBuild": "grounded-second-pass-v3",
               "evidenceGroundedSecondPass": True,
-              "researchRecoveryBuild": "grounded-recovery-v2",
+              "researchRecoveryBuild": "grounded-recovery-v3",
               "groundedEvidenceRecovery": True,
+              "groundedRecoveryProviderPath": "direct-evidence-only",
           }
           for key, expected in required.items():
               if data.get(key) != expected:
