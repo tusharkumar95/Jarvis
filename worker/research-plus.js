@@ -90,7 +90,7 @@ function originalQuestion(text) {
 
 function shouldFetchPubMed(question) {
   const q = String(question || "");
-  const biomedical = /\b(health|medical|medicine|medication|drug|treatment|therapy|disease|condition|symptom|nutrition|diet|cholesterol|diabetes|prediabetes|blood pressure|cancer|heart|cardiovascular|sleep|exercise|pain|injury|vitamin|supplement|vaccine|infection|allergy|gut|microbiome|protein|fibre|fiber)\b/i.test(q);
+  const biomedical = /\b(health|healthy|healthier|medical|medicine|medication|drug|treatment|therapy|disease|condition|symptom|nutrition|nutritional|diet|food|bread|grain|oats?|cholesterol|diabetes|prediabetes|blood pressure|cancer|heart|cardiovascular|sleep|exercise|pain|injury|vitamin|supplement|vaccine|infection|allergy|gut|microbiome|protein|fibre|fiber|carbohydrate|carbs?|fat|sodium|sugar)\b/i.test(q);
   const evidenceIntent = /\b(evidence|research|study|studies|science|scientific|effective|effectiveness|benefit|benefits|risk|risks|safe|safety|side effect|side effects|cause|causes|causal|healthy|healthier|better for|worse for|treatment|therapy|prevention|prevent|associated|association|clinical|trial|meta-analysis|systematic review|does .* help|does .* work|is .* good|is .* bad)\b/i.test(q);
   return biomedical && evidenceIntent;
 }
@@ -98,6 +98,7 @@ function shouldFetchPubMed(question) {
 function cleanResearchQuery(question) {
   let q = String(question || "")
     .replace(/\b(tell me|explain|teach me|please|can you|could you|what does the evidence say about|what does research say about|is it true that)\b/gi, " ")
+    .replace(/\b(actually|generally|necessarily|really|normal|regular|healthier|healthy|better|worse|good|bad|what|does|do|is|are|than|for|the|a|an)\b/gi, " ")
     .replace(/[?!.]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
