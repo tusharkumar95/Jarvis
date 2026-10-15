@@ -46,6 +46,7 @@ jobs:
           }, data
           print("PROVIDER:", data.get("provider"))
           print("VERIFICATION:", data.get("verification"), "verified=", data.get("verified"))
+          print("AUDIT STATUS:", data.get("verificationAuditStatus"))
           print("ANSWER:", text[:2200])
           print("---")
           PY
