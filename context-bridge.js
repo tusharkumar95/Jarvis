@@ -185,4 +185,8 @@
   const memoryScript = document.createElement("script");
   memoryScript.src = "personal-memory.js?v=1";
   document.body.appendChild(memoryScript);
+
+  const timelineScript = document.createElement("script");
+  timelineScript.src = "briefly-timeline.js?v=1";
+  document.body.appendChild(timelineScript);
 })();
