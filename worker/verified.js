@@ -100,9 +100,15 @@ export default {
     try { audit = await auditResponse.json(); }
     catch { return decline(draft, draftResponse.headers, "verification-invalid"); }
 
-    const checked = parseAudit(String(audit?.text || ""));
+    const auditText = String(audit?.text || "");
+    const checked = parseAudit(auditText);
     if (!checked.verified || !checked.answer) {
-      return decline({ ...draft, provider: audit?.provider || draft?.provider }, draftResponse.headers, "unverified");
+      return decline(
+        { ...draft, provider: audit?.provider || draft?.provider },
+        draftResponse.headers,
+        "unverified",
+        auditStatusLine(auditText)
+      );
     }
 
     return jsonWithHeaders({
@@ -112,6 +118,7 @@ export default {
       model: audit?.model || draft?.model,
       verified: true,
       verification: "double-pass-original-question",
+      verificationAuditStatus: "VERIFIED",
       draftProvider: draft?.provider || null,
       draftModel: draft?.model || null
     }, 200, draftResponse.headers);
@@ -194,12 +201,21 @@ function parseAudit(text) {
   return { verified: true, answer };
 }
 
-function decline(draft, headers, reason) {
+function auditStatusLine(text) {
+  return String(text || "")
+    .trim()
+    .split(/\r?\n/)[0]
+    .replace(/\s+/g, " ")
+    .slice(0, 100);
+}
+
+function decline(draft, headers, reason, auditStatus = "") {
   return jsonWithHeaders({
     ...draft,
     text: DECLINE_TEXT,
     verified: false,
-    verification: reason
+    verification: reason,
+    ...(auditStatus ? { verificationAuditStatus: auditStatus } : {})
   }, 200, headers);
 }
 
