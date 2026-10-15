@@ -1,7 +1,6 @@
 import expertWorker from "./expert.js";
-import baseWorker from "./index.js";
 
-const RESEARCH_BUILD = "grounded-recovery-v2";
+const RESEARCH_BUILD = "grounded-recovery-v3";
 
 export default {
   async fetch(request, env, ctx) {
@@ -17,7 +16,8 @@ export default {
           pubMedAbstractContext: true,
           biomedicalResearchPolicy: "abstract-grounded-when-relevant",
           researchRecoveryBuild: RESEARCH_BUILD,
-          groundedEvidenceRecovery: true
+          groundedEvidenceRecovery: true,
+          groundedRecoveryProviderPath: "direct-evidence-only"
         }, 200, response.headers);
       } catch {
         return response;
@@ -77,10 +77,8 @@ export default {
     }
 
     const recovered = await groundedRecovery({
-      request,
       env,
-      ctx,
-      body,
+      mode:body.mode === "public" ? "public" : "private",
       question,
       evidenceMessages,
       hasPubMed:studies.length > 0,
@@ -116,40 +114,114 @@ export default {
   }
 };
 
-async function groundedRecovery({ request, env, ctx, body, question, evidenceMessages, hasPubMed, hasStatic }) {
-  const prompt = [
-    question,
+async function groundedRecovery({ env, mode, question, evidenceMessages, hasPubMed, hasStatic }) {
+  const evidence = evidenceMessages.map(message => String(message.content || "")).join("\n\n");
+  const system = [
+    "You are Jarvis's evidence-grounded final-answer pass.",
+    "Use only the evidence supplied in the user message for factual claims. Do not rely on outside memory to add facts.",
+    "A directly relevant reputable encyclopedic reference is sufficient for stable textbook facts.",
+    "For biomedical abstracts, limited or mixed findings are a valid result; state uncertainty and do not overstate causality.",
+    "If the evidence is unrelated or cannot support even a useful cautious answer, output exactly INSUFFICIENT.",
+    "Otherwise answer the question directly, clearly and naturally. Do not include a verification label."
+  ].join(" ");
+  const user = [
+    `QUESTION:\n${question}`,
     "",
-    "JARVIS VERIFICATION CONTEXT",
-    "Build the final answer fresh from the retrieved evidence supplied immediately before this question. Do not use a rejected draft.",
-    "Only include factual claims supported by that evidence. You may explain straightforward logical connections, but do not add unsupported details from memory.",
-    hasStatic ? "For a stable textbook fact, a directly relevant encyclopedic reference is sufficient evidence; answer only what the reference supports." : "",
-    hasPubMed ? "For PubMed evidence, limited or mixed findings are a valid result. Describe the uncertainty and study limitations rather than forcing a yes/no conclusion or overstating causality." : "",
-    "If the evidence is unrelated or cannot support even a useful cautious answer, output exactly: INSUFFICIENT",
-    "Otherwise answer directly and naturally, with no verification label."
+    "EVIDENCE:\n" + evidence,
+    "",
+    hasStatic ? "STATIC-EVIDENCE RULE: explain only what the reference supports, but do not require current news or multiple sources for an established textbook fact." : "",
+    hasPubMed ? "BIOMEDICAL-EVIDENCE RULE: mixed evidence is an answer; accurately describe its limits rather than forcing a yes/no conclusion." : ""
   ].filter(Boolean).join("\n");
 
-  const groundedRequest = new Request(request.url, {
-    method:"POST",
-    headers:request.headers,
-    body:JSON.stringify({
-      mode:body.mode === "public" ? "public" : "private",
-      messages:[...evidenceMessages, { role:"user", content:prompt }]
-    })
-  });
-
   try {
-    const response = await baseWorker.fetch(groundedRequest, env, ctx);
-    if (!response.ok) return { answer:"", status:`HTTP_${response.status}` };
-    const data = await response.json();
-    const text = String(data?.text || "").trim();
+    const result = await callGroundedProvider(system, user, env, mode);
+    const text = String(result?.text || "").trim();
     if (!text || /^INSUFFICIENT\b/i.test(text) || /^UNVERIFIED\b/i.test(text)) {
       return { answer:"", status:firstLine(text) || "INSUFFICIENT" };
     }
-    return { answer:text, provider:data?.provider, model:data?.model, status:"GROUNDED" };
-  } catch {
-    return { answer:"", status:"GROUNDING_FAILED" };
+    return { answer:text, provider:result.provider, model:result.model, status:"GROUNDED" };
+  } catch (error) {
+    return { answer:"", status:`GROUNDING_FAILED:${String(error?.message || error).slice(0,60)}` };
   }
+}
+
+async function callGroundedProvider(system, user, env, mode) {
+  const errors = [];
+  if (env.GROQ_API_KEY) {
+    try {
+      const model = env.GROQ_MODEL || "openai/gpt-oss-120b";
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method:"POST",
+        headers:{ "Authorization":"Bearer " + env.GROQ_API_KEY, "Content-Type":"application/json" },
+        body:JSON.stringify({
+          model,
+          messages:[{ role:"system", content:system }, { role:"user", content:user }],
+          max_completion_tokens:1800,
+          temperature:0.15
+        })
+      });
+      const data = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(`Groq ${response.status}`);
+      const text = data?.choices?.[0]?.message?.content?.trim();
+      if (!text) throw new Error("Groq empty response");
+      return { provider:"groq", model, text };
+    } catch (error) { errors.push(String(error?.message || error)); }
+  }
+
+  if (env.OPENROUTER_API_KEY) {
+    try {
+      const model = "openrouter/free";
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method:"POST",
+        headers:{
+          "Authorization":"Bearer " + env.OPENROUTER_API_KEY,
+          "Content-Type":"application/json",
+          "HTTP-Referer":"https://tusharkumar95.github.io/Jarvis/",
+          "X-Title":"Jarvis"
+        },
+        body:JSON.stringify({
+          model,
+          messages:[{ role:"system", content:system }, { role:"user", content:user }],
+          max_tokens:1800,
+          temperature:0.15,
+          provider:{ zdr:true, data_collection:"deny" }
+        })
+      });
+      const data = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(`OpenRouter ${response.status}`);
+      const text = data?.choices?.[0]?.message?.content?.trim();
+      if (!text) throw new Error("OpenRouter empty response");
+      return { provider:"openrouter", model, text };
+    } catch (error) { errors.push(String(error?.message || error)); }
+  }
+
+  if (mode === "public" && env.ALLOW_GEMINI_FREE === "true" && env.GEMINI_API_KEY) {
+    try {
+      const model = env.GEMINI_MODEL || "gemini-3.5-flash-lite";
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({
+          systemInstruction:{ parts:[{ text:system }] },
+          contents:[{ role:"user", parts:[{ text:user }] }],
+          generationConfig:{ maxOutputTokens:1800, temperature:0.15 }
+        })
+      });
+      const data = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(`Gemini ${response.status}`);
+      const text = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
+      if (!text) throw new Error("Gemini empty response");
+      return { provider:"gemini", model, text };
+    } catch (error) { errors.push(String(error?.message || error)); }
+  }
+
+  throw new Error(errors.join("; ") || "No free grounded provider available");
+}
+
+async function parseJsonResponse(response) {
+  const text = await response.text();
+  try { return JSON.parse(text); }
+  catch { return { raw:text.slice(0,500) }; }
 }
 
 function findLastUserIndex(messages) {
