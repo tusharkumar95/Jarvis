@@ -1,4 +1,4 @@
-const CACHE = "jarvis-shell-v10";
+const CACHE = "jarvis-shell-v11";
 const SHELL = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const SHELL = [
   "./chat-memory.js",
   "./context-bridge.js",
   "./briefly-timeline.js",
+  "./briefly-live-summary.js",
   "./personal-memory.js",
   "./tasks.js",
   "./today.js",
