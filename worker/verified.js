@@ -2,7 +2,7 @@ import baseWorker from "./index.js";
 import { inspectWebsite } from "./library-inspect.js";
 
 const DECLINE_TEXT = "I couldn’t verify enough reliable information to answer that confidently. I’d rather say I don’t know than make up details. Try rephrasing the question or ask me to check a more specific fact.";
-const VERIFICATION_BUILD = "static-evidence-v1";
+const VERIFICATION_BUILD = "calibrated-v2";
 
 export default {
   async fetch(request, env, ctx) {
@@ -66,6 +66,7 @@ export default {
     const researchQuestion = originalQuestionForResearch(lastUser);
     const priorContext = messages.slice(Math.max(0, messages.length - 7), Math.max(0, messages.length - 1));
     const specialistContext = String(lastUser).trim() !== String(researchQuestion).trim() ? lastUser : "";
+    const hasPubMedEvidence = messages.some(message => /JARVIS PUBMED ABSTRACT CONTEXT/i.test(String(message?.content || "")));
     const staticEvidence = isStableReferenceQuestion(researchQuestion)
       ? await fetchStaticReferenceEvidence(researchQuestion)
       : "";
@@ -75,7 +76,7 @@ export default {
       ...(specialistContext ? [{ role: "user", content: specialistContext }] : []),
       ...(staticEvidence ? [{ role: "user", content: staticEvidence }] : []),
       { role: "assistant", content: `DRAFT TO AUDIT:\n${String(draft?.text || "")}` },
-      { role: "user", content: buildAuditPacket(researchQuestion, Boolean(staticEvidence)) }
+      { role: "user", content: buildAuditPacket(researchQuestion, Boolean(staticEvidence), hasPubMedEvidence) }
     ];
 
     const auditBody = JSON.stringify({
@@ -121,7 +122,7 @@ export default {
       verified: true,
       verification: "double-pass-original-question",
       verificationAuditStatus: "VERIFIED",
-      verificationEvidence: staticEvidence ? "encyclopedic+base-research" : "base-research",
+      verificationEvidence: staticEvidence ? "encyclopedic+base-research" : hasPubMedEvidence ? "pubmed-abstracts+base-research" : "base-research",
       draftProvider: draft?.provider || null,
       draftModel: draft?.model || null
     }, 200, draftResponse.headers);
@@ -216,24 +217,26 @@ async function fetchWithTimeout(url, timeoutMs) {
   finally { clearTimeout(timer); }
 }
 
-function buildAuditPacket(researchQuestion, hasStaticEvidence) {
+function buildAuditPacket(researchQuestion, hasStaticEvidence, hasPubMedEvidence) {
   return [
     researchQuestion,
     "",
     "JARVIS VERIFICATION CONTEXT",
     "FACT CHECK PASS.",
     "The text before this marker is the user's question and the subject to check.",
-    "Audit the preceding draft against the retrieved evidence.",
+    "Audit the preceding draft against the retrieved evidence, and rewrite it conservatively when needed.",
+    "Verification threshold: prefer a cautious, qualified VERIFIED answer whenever relevant reliable evidence supports the core answer. Use UNVERIFIED only when there is no relevant reliable evidence, or the evidence cannot establish even a useful qualified answer.",
     "Check material factual claims, dates, numbers, names, causal relationships and cited sources.",
-    "Remove or correct anything unsupported, contradicted, overly precise or uncertain.",
-    "Do not fill evidence gaps from model memory.",
-    "When sources disagree, preserve the uncertainty.",
+    "Remove or correct anything unsupported, contradicted, overly precise or uncertain; do not reject the whole answer merely because one detail must be removed.",
+    "Do not fill genuine evidence gaps from model memory.",
+    "When sources disagree or evidence is limited, say that in the corrected answer instead of automatically refusing.",
     "For time-sensitive facts, rely on dated evidence and do not substitute stale information.",
     "For empirical claims, do not infer causation beyond what the evidence supports.",
-    hasStaticEvidence ? "For stable textbook-level facts, the supplied directly relevant encyclopedic reference is adequate evidence; do not reject solely because it is one source or not recent." : "",
+    hasStaticEvidence ? "For stable textbook-level facts, the supplied directly relevant encyclopedic reference is adequate evidence. Do not demand recency or multiple independent sources for ordinary established facts." : "",
+    hasPubMedEvidence ? "PubMed abstracts relevant to this question are supplied earlier. Mixed, modest or limited study evidence can still support a VERIFIED answer when the answer accurately describes those limitations. Do not require the studies to prove a simple yes/no conclusion." : "",
     "If enough evidence remains to answer the core question, output exactly this first line: VERIFIED",
     "Then provide the complete corrected answer.",
-    "If the core question cannot be supported well enough, output exactly this first line: UNVERIFIED",
+    "If even a cautious useful answer cannot be supported, output exactly this first line: UNVERIFIED",
     "Then give one short sentence explaining what could not be established.",
     "Do not put anything before the status line."
   ].filter(Boolean).join("\n");
