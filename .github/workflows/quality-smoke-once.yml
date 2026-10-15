@@ -1,0 +1,52 @@
+name: Jarvis end-to-end quality smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/quality-smoke-once.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-live-answers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Test evidence and general-knowledge answers
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://jarvis-ai-router.kumar-tushar95.workers.dev/chat"
+          questions=(
+            "Is sourdough bread necessarily healthier than regular yeast bread? What does the evidence say? Keep it concise."
+            "Why are the Himalayas still growing? Explain the mechanism clearly."
+          )
+          for q in "${questions[@]}"; do
+            echo "QUESTION: $q"
+            payload="$(python - "$q" <<'PY'
+          import json, sys
+          print(json.dumps({"messages":[{"role":"user","content":sys.argv[1]}]}))
+          PY
+          )"
+            body="$(curl --fail --silent --show-error --max-time 75 \
+              -H 'Content-Type: application/json' \
+              -H 'Origin: https://tusharkumar95.github.io' \
+              --data "$payload" "$URL")"
+            python - "$body" <<'PY'
+          import json, sys
+          data=json.loads(sys.argv[1])
+          text=str(data.get("text", "")).strip()
+          assert text, data
+          assert data.get("verification") in {
+              "double-pass-original-question", "double-pass", "unverified",
+              "verification-unavailable", "verification-call-failed", "verification-invalid"
+          }, data
+          print("PROVIDER:", data.get("provider"))
+          print("VERIFICATION:", data.get("verification"), "verified=", data.get("verified"))
+          print("ANSWER:", text[:2200])
+          print("---")
+          PY
+          done
