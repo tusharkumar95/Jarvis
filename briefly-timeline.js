@@ -193,4 +193,8 @@
     if (document.visibilityState === "visible") refreshTimeline();
   });
   window.addEventListener("beforeunload", () => clearInterval(timer), { once: true });
+
+  const liveSummaryScript = document.createElement("script");
+  liveSummaryScript.src = "briefly-live-summary.js?v=1";
+  document.body.appendChild(liveSummaryScript);
 })();
