@@ -1,0 +1,54 @@
+name: Jarvis Worker live smoke check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker/**"
+      - ".github/workflows/worker-live-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-live-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Wait for Cloudflare deployment and verify health flags
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://jarvis-ai-router.kumar-tushar95.workers.dev/health"
+          for attempt in 1 2 3 4 5 6 7 8; do
+            echo "Health check attempt $attempt"
+            body="$(curl --fail --silent --show-error --max-time 12 "$URL" || true)"
+            echo "$body"
+            if python - "$body" <<'PY'
+          import json, sys
+          raw = sys.argv[1]
+          try:
+              data = json.loads(raw)
+          except Exception:
+              raise SystemExit(1)
+          required = {
+              "ok": True,
+              "verificationGate": True,
+              "spreadsheetExpert": True,
+              "pubMedAbstractContext": True,
+          }
+          for key, expected in required.items():
+              if data.get(key) != expected:
+                  raise SystemExit(1)
+          if data.get("verificationResearchTarget") != "original-question":
+              raise SystemExit(1)
+          print("Live Jarvis Worker is on the current verified research stack.")
+          PY
+            then
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Live Worker did not expose the expected current stack after retries."
+          exit 1
