@@ -1,6 +1,11 @@
 import researchWorker from "./research-plus.js";
 
 const BUILD = "lab-app-builder-v1";
+const ALLOWED_ORIGINS = new Set([
+  "https://tusharkumar95.github.io",
+  "http://localhost:8788",
+  "http://127.0.0.1:8788"
+]);
 
 export default {
   async fetch(request, env, ctx) {
@@ -21,10 +26,10 @@ export default {
 
     let body = {};
     try { body = await request.json(); }
-    catch { return json({ error:"Invalid JSON body" }, 400); }
+    catch { return json({ error:"Invalid JSON body" }, 400, request); }
 
     const prompt = String(body?.prompt || "").trim().slice(0, 14000);
-    if (!prompt) return json({ error:"Describe the app you want to build." }, 400);
+    if (!prompt) return json({ error:"Describe the app you want to build." }, 400, request);
 
     const current = normalizeCurrent(body?.current);
     const system = [
@@ -52,10 +57,10 @@ export default {
     try {
       const result = await callProvider(system, user, env);
       const app = parseApp(result.text);
-      if (!app) return json({ error:"The builder returned invalid app code. Try the build again.", provider:result.provider }, 502);
-      return json({ ok:true, app, provider:result.provider, model:result.model, build:BUILD }, 200);
+      if (!app) return json({ error:"The builder returned invalid app code. Try the build again.", provider:result.provider }, 502, request);
+      return json({ ok:true, app, provider:result.provider, model:result.model, build:BUILD }, 200, request);
     } catch (error) {
-      return json({ error:String(error?.message || error).slice(0,400) || "No free builder model is available right now." }, 503);
+      return json({ error:String(error?.message || error).slice(0,400) || "No free builder model is available right now." }, 503, request);
     }
   }
 };
@@ -154,12 +159,24 @@ async function parseJson(response) {
   catch { return { raw:text.slice(0,500) }; }
 }
 
+function cors(request) {
+  const origin = request.headers.get("Origin") || "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "https://tusharkumar95.github.io",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Vary":"Origin"
+  };
+}
+
 function jsonWithHeaders(data, status, sourceHeaders) {
   const headers = new Headers(sourceHeaders || {});
   headers.set("Content-Type", "application/json");
   return new Response(JSON.stringify(data), { status, headers });
 }
 
-function json(data, status=200) {
-  return new Response(JSON.stringify(data), { status, headers:{"Content-Type":"application/json"} });
+function json(data, status=200, request=null) {
+  const headers = new Headers({"Content-Type":"application/json"});
+  if (request) Object.entries(cors(request)).forEach(([key,value]) => headers.set(key,value));
+  return new Response(JSON.stringify(data), { status, headers });
 }
