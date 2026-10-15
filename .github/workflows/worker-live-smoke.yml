@@ -39,7 +39,7 @@ jobs:
               "pubMedAbstractContext": True,
               "verificationBuild": "grounded-second-pass-v3",
               "evidenceGroundedSecondPass": True,
-              "researchRecoveryBuild": "grounded-recovery-v1",
+              "researchRecoveryBuild": "grounded-recovery-v2",
               "groundedEvidenceRecovery": True,
           }
           for key, expected in required.items():
