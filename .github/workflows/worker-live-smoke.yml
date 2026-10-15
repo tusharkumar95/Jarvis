@@ -37,6 +37,8 @@ jobs:
               "verificationGate": True,
               "spreadsheetExpert": True,
               "pubMedAbstractContext": True,
+              "labAppBuilder": True,
+              "labAppBuilderBuild": "lab-app-builder-v1",
               "verificationBuild": "grounded-direct-v4",
               "evidenceGroundedSecondPass": True,
               "groundedVerificationProviderPath": "direct-evidence-only",
@@ -49,7 +51,7 @@ jobs:
                   raise SystemExit(1)
           if data.get("verificationResearchTarget") != "original-question":
               raise SystemExit(1)
-          print("Live Jarvis Worker is on the exact current grounded research stack.")
+          print("Live Jarvis Worker includes the verified research stack and Lab app builder.")
           PY
             then
               exit 0
