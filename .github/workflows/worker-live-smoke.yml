@@ -37,7 +37,7 @@ jobs:
               "verificationGate": True,
               "spreadsheetExpert": True,
               "pubMedAbstractContext": True,
-              "verificationBuild": "static-evidence-v1",
+              "verificationBuild": "calibrated-v2",
           }
           for key, expected in required.items():
               if data.get(key) != expected:
