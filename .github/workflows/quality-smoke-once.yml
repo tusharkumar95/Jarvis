@@ -40,13 +40,16 @@ jobs:
           data=json.loads(sys.argv[1])
           text=str(data.get("text", "")).strip()
           assert text, data
-          assert data.get("verification") in {
-              "double-pass-original-question", "double-pass", "unverified",
-              "verification-unavailable", "verification-call-failed", "verification-invalid"
-          }, data
+          allowed={
+              "double-pass-original-question", "double-pass",
+              "evidence-grounded-second-pass", "evidence-grounded-recovery"
+          }
+          assert data.get("verified") is True, data
+          assert data.get("verification") in allowed, data
           print("PROVIDER:", data.get("provider"))
           print("VERIFICATION:", data.get("verification"), "verified=", data.get("verified"))
           print("AUDIT STATUS:", data.get("verificationAuditStatus"))
+          print("EVIDENCE:", data.get("verificationEvidence"))
           print("ANSWER:", text[:2200])
           print("---")
           PY
