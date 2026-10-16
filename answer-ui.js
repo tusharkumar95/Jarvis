@@ -132,6 +132,10 @@
       });
       node.appendChild(actions);
     }
+
+    document.dispatchEvent(new CustomEvent("jarvis:answer-rendered", {
+      detail: { node, text: raw, meta: meta ? { ...meta } : {} }
+    }));
   }
 
   function observeChat() {
