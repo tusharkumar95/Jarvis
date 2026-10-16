@@ -5,6 +5,8 @@
   let brieflyMeta = {};
   let moves = [];
   let movesMeta = {};
+  let markets = {};
+  let marketsMeta = {};
 
   function normalized(value) {
     return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -59,6 +61,24 @@
         sources: data?.sources || {}
       };
       window.JarvisMoves = { ...movesMeta, records: moves.map(move => ({ ...move })) };
+    } catch {}
+  }
+
+  async function refreshMarkets() {
+    try {
+      const response = await nativeFetch("../Briefly/market-intelligence.json?jarvisMarkets=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) return;
+      const data = await response.json();
+      markets = data?.markets && typeof data.markets === "object" ? data.markets : {};
+      marketsMeta = {
+        updated: data?.updated || "",
+        engine: data?.engine || "Briefly Markets Intelligence",
+        policy: data?.policy || ""
+      };
+      window.JarvisMarkets = {
+        ...marketsMeta,
+        markets: Object.fromEntries(Object.entries(markets).map(([key, value]) => [key, { ...value }]))
+      };
     } catch {}
   }
 
@@ -153,6 +173,45 @@
     ].join("\n");
   }
 
+  function wantsMarketContext(question) {
+    return /\b(why did|why is|why are|what moved|market move|markets move|tsx|s&p\/tsx|nifty|sensex|canadian market|canada market|indian market|india market|market driver|market drivers|what drove|drove the market)\b/i.test(String(question || ""));
+  }
+
+  function marketLine(name, market) {
+    if (!market) return `${name}: unavailable.`;
+    const drivers = Array.isArray(market.drivers) ? market.drivers.slice(0, 5) : [];
+    const driverText = drivers.length
+      ? drivers.map(item => `${String(item?.kind || "context").toUpperCase()}: ${item?.label || "Unnamed factor"}${item?.detail ? ` — ${item.detail}` : ""}`).join(" | ")
+      : "No driver evidence supplied.";
+    return [
+      `${name}: ${market.move || market.headline || "market move unavailable"}`,
+      market.headline ? `headline: ${market.headline}` : "",
+      market.why ? `Briefly explanation: ${market.why}` : "",
+      `confidence: ${market.confidence || "unknown"}`,
+      `drivers/context: ${driverText}`,
+      market.primaryIndex?.source ? `index source: ${market.primaryIndex.source}` : "",
+      Array.isArray(market.sources) ? `evidence count: ${market.sources.length}` : ""
+    ].filter(Boolean).join(" — ");
+  }
+
+  function buildMarketsContext(question) {
+    if (!Object.keys(markets).length) return "Briefly Markets Intelligence is currently unavailable.";
+    const q = String(question || "").toLowerCase();
+    const selected = [];
+    if (/\b(canada|canadian|tsx|s&p\/tsx)\b/.test(q) && markets.Canada) selected.push(["Canada", markets.Canada]);
+    if (/\b(india|indian|nifty|sensex)\b/.test(q) && markets.India) selected.push(["India", markets.India]);
+    if (!selected.length) {
+      if (markets.Canada) selected.push(["Canada", markets.Canada]);
+      if (markets.India) selected.push(["India", markets.India]);
+    }
+    return [
+      `Markets feed: ${marketsMeta.engine || "Briefly Markets Intelligence"}${marketsMeta.updated ? `; updated ${marketsMeta.updated}` : ""}.`,
+      marketsMeta.policy || "Treat a factor as a causal driver only when the evidence explicitly connects it to the same-direction final market move; otherwise call it context.",
+      "Do not convert market-driver evidence into personalized buy/sell advice.",
+      selected.map(([name, market]) => marketLine(name, market)).join("\n")
+    ].join("\n");
+  }
+
   function buildContext(question) {
     const sections = [];
     const q = String(question || "");
@@ -183,6 +242,7 @@
     }
 
     if (wantsMovesContext(q)) sections.push(buildMovesContext(q));
+    if (wantsMarketContext(q)) sections.push(buildMarketsContext(q));
 
     if (!sections.length) return "";
     return [
@@ -224,10 +284,12 @@
 
   refreshBriefly();
   refreshMoves();
+  refreshMarkets();
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
       refreshBriefly();
       refreshMoves();
+      refreshMarkets();
     }
   });
 
