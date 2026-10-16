@@ -4,6 +4,24 @@
   let brieflyStories = [];
   let brieflyMeta = {};
 
+  function normalized(value) {
+    return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+  }
+
+  function syncBrieflySummaries() {
+    if (!brieflyStories.length) return;
+    const byTitle = new Map(brieflyStories.map(story => [normalized(story?.title), story]));
+    document.querySelectorAll("#brieflyList .news-item").forEach(card => {
+      const title = card.querySelector("h3");
+      const summary = card.querySelector("p[id^='jarvis-news-summary-']");
+      if (!title || !summary) return;
+      const story = byTitle.get(normalized(title.textContent));
+      if (!story?.summary) return;
+      summary.textContent = String(story.summary).trim();
+      card.querySelector("[data-jarvis-news]")?.remove();
+    });
+  }
+
   async function refreshBriefly() {
     try {
       const response = await nativeFetch("../Briefly/data.json?jarvisContext=" + Date.now(), { cache: "no-store" });
@@ -15,6 +33,14 @@
         engine: data?.engine || "",
         editor: data?.editor || ""
       };
+      window.JarvisBriefly = {
+        updated: brieflyMeta.updated,
+        engine: brieflyMeta.engine,
+        editor: brieflyMeta.editor,
+        stories: brieflyStories.map(story => ({ ...story }))
+      };
+      document.dispatchEvent(new CustomEvent("jarvis:briefly-data", { detail: window.JarvisBriefly }));
+      requestAnimationFrame(syncBrieflySummaries);
     } catch {}
   }
 
@@ -119,6 +145,11 @@
 
     return nativeFetch(input, init);
   };
+
+  document.addEventListener("click", event => {
+    if (!event.target.closest?.('[data-go="briefly"]')) return;
+    requestAnimationFrame(syncBrieflySummaries);
+  });
 
   refreshBriefly();
   document.addEventListener("visibilitychange", () => {
