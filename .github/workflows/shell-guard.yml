@@ -1,0 +1,91 @@
+name: Jarvis Shell Guard
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate stable interaction shell
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          import re, sys
+
+          html = Path('index.html').read_text()
+          config = Path('config.js').read_text()
+          app = Path('app.js').read_text()
+          sw = Path('sw.js').read_text()
+
+          errors = []
+
+          class Parser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = set()
+                  self.data_go = []
+                  self.in_nav = False
+                  self.nav_labels = []
+                  self._nav_button = False
+                  self._label = []
+              def handle_starttag(self, tag, attrs):
+                  a = dict(attrs)
+                  if 'id' in a: self.ids.add(a['id'])
+                  classes = set(a.get('class','').split())
+                  if tag == 'nav' and 'bottom-nav' in classes: self.in_nav = True
+                  if a.get('data-go'): self.data_go.append(a['data-go'])
+                  if self.in_nav and tag == 'button':
+                      self._nav_button = True
+                      self._label = []
+              def handle_endtag(self, tag):
+                  if self.in_nav and tag == 'button' and self._nav_button:
+                      self.nav_labels.append(' '.join(''.join(self._label).split()))
+                      self._nav_button = False
+                  if tag == 'nav' and self.in_nav: self.in_nav = False
+              def handle_data(self, data):
+                  if self._nav_button: self._label.append(data)
+
+          p = Parser(); p.feed(html)
+
+          expected = ['⌂ Home','✦ Ask','▦ PocketSheet','↗ Investment Radar']
+          if p.nav_labels != expected:
+              errors.append(f'Bottom nav changed: {p.nav_labels!r}')
+
+          for target in p.data_go:
+              if target not in p.ids:
+                  errors.append(f'data-go target has no matching view id: {target}')
+
+          if 'document.querySelectorAll("[data-go]")' not in app or 'addEventListener("click"' not in app:
+              errors.append('Core data-go click binding missing from app.js')
+
+          if 'createElement("script")' in config or 'appendChild' in config or 'addEventListener("load"' in config:
+              errors.append('config.js must remain configuration-only; dynamic feature loading is blocked')
+
+          shell_match = re.search(r'const SHELL = \[(.*?)\];', sw, re.S)
+          if not shell_match:
+              errors.append('Service worker SHELL list missing')
+          else:
+              for item in re.findall(r'"\.\/([^"?]+)"', shell_match.group(1)):
+                  if item and item != '' and not Path(item).exists():
+                      errors.append(f'Service worker caches missing file: {item}')
+
+          # Whole-document observers previously caused dead taps. Only answer-ui.js is allowed to use one.
+          for path in Path('.').glob('*.js'):
+              if path.name == 'answer-ui.js':
+                  continue
+              text = path.read_text(errors='ignore')
+              if 'MutationObserver' in text:
+                  errors.append(f'Whole-DOM observer not allowed in shell module: {path.name}')
+
+          if errors:
+              print('\n'.join('ERROR: ' + e for e in errors))
+              sys.exit(1)
+          print('Jarvis shell interaction contract passed.')
+          PY
