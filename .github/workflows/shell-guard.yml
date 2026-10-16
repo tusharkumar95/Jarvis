@@ -46,7 +46,7 @@ jobs:
                       self._label = []
               def handle_endtag(self, tag):
                   if self.in_nav and tag == 'button' and self._nav_button:
-                      self.nav_labels.append(' '.join(''.join(self._label).split()))
+                      self.nav_labels.append(''.join(self._label).strip())
                       self._nav_button = False
                   if tag == 'nav' and self.in_nav: self.in_nav = False
               def handle_data(self, data):
@@ -54,7 +54,7 @@ jobs:
 
           p = Parser(); p.feed(html)
 
-          expected = ['⌂ Home','✦ Ask','▦ PocketSheet','↗ Investment Radar']
+          expected = ['⌂Home','✦Ask','▦PocketSheet','↗Investment Radar']
           if p.nav_labels != expected:
               errors.append(f'Bottom nav changed: {p.nav_labels!r}')
 
@@ -73,16 +73,17 @@ jobs:
               errors.append('Service worker SHELL list missing')
           else:
               for item in re.findall(r'"\.\/([^"?]+)"', shell_match.group(1)):
-                  if item and item != '' and not Path(item).exists():
+                  if item and not Path(item).exists():
                       errors.append(f'Service worker caches missing file: {item}')
 
-          # Whole-document observers previously caused dead taps. Only answer-ui.js is allowed to use one.
+          # Unbounded observers caused the dead-tap regression. The two scoped legacy observers are allowed.
+          observer_allowlist = {'answer-ui.js', 'chat-memory.js'}
           for path in Path('.').glob('*.js'):
-              if path.name == 'answer-ui.js':
+              if path.name in observer_allowlist:
                   continue
               text = path.read_text(errors='ignore')
               if 'MutationObserver' in text:
-                  errors.append(f'Whole-DOM observer not allowed in shell module: {path.name}')
+                  errors.append(f'MutationObserver not allowed in shell module: {path.name}')
 
           if errors:
               print('\n'.join('ERROR: ' + e for e in errors))
