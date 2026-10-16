@@ -3,6 +3,8 @@
   const LAB_KEY = "jarvis-lab-projects-v1";
   let brieflyStories = [];
   let brieflyMeta = {};
+  let moves = [];
+  let movesMeta = {};
 
   function normalized(value) {
     return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -41,6 +43,22 @@
       };
       document.dispatchEvent(new CustomEvent("jarvis:briefly-data", { detail: window.JarvisBriefly }));
       requestAnimationFrame(syncBrieflySummaries);
+    } catch {}
+  }
+
+  async function refreshMoves() {
+    try {
+      const response = await nativeFetch("../Briefly/moves-intelligence.json?jarvisMoves=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) return;
+      const data = await response.json();
+      moves = Array.isArray(data?.records) ? data.records.slice(0, 160) : [];
+      movesMeta = {
+        updated: data?.updated || "",
+        engine: data?.engine || "Moves Intelligence",
+        policy: data?.policy || "",
+        sources: data?.sources || {}
+      };
+      window.JarvisMoves = { ...movesMeta, records: moves.map(move => ({ ...move })) };
     } catch {}
   }
 
@@ -84,6 +102,57 @@
     return parts.join(" — ");
   }
 
+  function wantsMovesContext(question) {
+    return /\b(moves?|smart money|insider buying|insider selling|insiders?|accumulat(?:e|es|ed|ing|ion)|bulk deal|block deal|ownership activity|large buyer|large seller|who (?:is|has been) buying|who (?:is|has been) selling|institutional buying|institutional selling)\b/i.test(String(question || ""));
+  }
+
+  function matchMove(move, question) {
+    const q = String(question || "").toLowerCase();
+    if (/\b(canada|canadian|tsx|tsxv|cse)\b/.test(q) && move.market !== "Canada") return false;
+    if (/\b(india|indian|nse|bse)\b/.test(q) && move.market !== "India") return false;
+    if (/\binsider buying\b/.test(q) && !(move.tags || []).map(x => String(x).toLowerCase()).includes("insider buying")) return false;
+    if (/\binsider selling\b/.test(q) && move.direction !== "SELL") return false;
+    if (/\baccumulat/.test(q) && !(move.tags || []).map(x => String(x).toLowerCase()).includes("accumulating")) return false;
+    if (/\b(?:selling|seller|sold|sell)\b/.test(q) && !/\b(?:buy|buyer|buying|accumulat)/.test(q) && move.direction !== "SELL") return false;
+    return true;
+  }
+
+  function moveMoney(move) {
+    if (move.market === "India") return `₹${Number(move.valueCr || 0).toFixed(2)} Cr`;
+    const value = Number(move.valueCAD || 0);
+    return value ? `CAD ${Math.round(value).toLocaleString("en-CA")}` : "value unavailable";
+  }
+
+  function moveLine(move, index) {
+    const tags = Array.isArray(move.tags) ? move.tags.join(", ") : "";
+    return [
+      `${index + 1}. ${move.market || ""} — ${move.company || "Unknown company"}${move.symbol ? ` (${move.symbol})` : ""}`,
+      `actor: ${move.investor || "Unknown"}${move.role ? `; role: ${move.role}` : move.actorType ? `; type: ${move.actorType}` : ""}`,
+      `action: ${move.direction || ""}; disclosure type: ${move.dealType || ""}; value: ${moveMoney(move)}`,
+      `signal: ${move.signal || ""}; Move Score: ${Number(move.moveScore || 0)}/100 (${move.strength || "unrated"}); observed days: ${Number(move.observedDays || 1)}`,
+      tags ? `tags: ${tags}` : "",
+      move.whyNotable ? `why notable: ${move.whyNotable}` : "",
+      `source quality: ${move.sourceQuality || "public disclosure"}`,
+      move.sourceUrl ? `source: ${move.sourceUrl}` : ""
+    ].filter(Boolean).join(" — ");
+  }
+
+  function buildMovesContext(question) {
+    if (!moves.length) return "Briefly Moves Intelligence is currently unavailable.";
+    let selected = moves.filter(move => matchMove(move, question));
+    if (!selected.length) selected = [...moves];
+    selected.sort((a, b) => (Number(b.moveScore || 0) - Number(a.moveScore || 0)) || String(b.date || "").localeCompare(String(a.date || "")));
+    const sourceNote = movesMeta?.sources?.Canada?.automation || "Canadian activity is published only after public-disclosure verification.";
+    return [
+      `Moves feed: ${movesMeta.engine || "Moves Intelligence"}${movesMeta.updated ? `; updated ${movesMeta.updated}` : ""}.`,
+      "Use only the records below for claims about disclosed ownership activity. Do not infer undisclosed holdings, investor intent, future price performance, or investment merit.",
+      "Move Score ranks disclosure significance from observed data; it is not a buy/sell score or expected-return forecast.",
+      "India records come from official NSE bulk/block disclosures. A bulk or block trade is not automatically bullish; market intermediaries are deliberately discounted.",
+      `Canada rule: ${sourceNote} Never call a Canadian record insider buying unless the supplied role/tags establish an insider open-market purchase.`,
+      selected.slice(0, 12).map(moveLine).join("\n")
+    ].join("\n");
+  }
+
   function buildContext(question) {
     const sections = [];
     const q = String(question || "");
@@ -112,6 +181,8 @@
           : "Current Briefly feed: unavailable right now."
       );
     }
+
+    if (wantsMovesContext(q)) sections.push(buildMovesContext(q));
 
     if (!sections.length) return "";
     return [
@@ -152,8 +223,12 @@
   });
 
   refreshBriefly();
+  refreshMoves();
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") refreshBriefly();
+    if (document.visibilityState === "visible") {
+      refreshBriefly();
+      refreshMoves();
+    }
   });
 
   const memoryScript = document.createElement("script");
