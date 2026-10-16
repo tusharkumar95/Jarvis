@@ -1,4 +1,4 @@
-const CACHE = "jarvis-shell-recovery-v2";
+const CACHE = "jarvis-shell-stable-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const SHELL = [
   "./ui-polish.css",
   "./library-v2.css",
   "./intelligence.css",
+  "./lab-builder.css",
   "./config.js",
   "./answer-ui.js",
   "./app.js",
@@ -17,10 +18,12 @@ const SHELL = [
   "./today.js",
   "./capture.js",
   "./library-v2.js",
+  "./library-resurface.js",
   "./learn.js",
   "./discover-plus.js",
   "./spreadsheet.js",
   "./universal-search.js",
+  "./lab-builder.js",
   "./pwa.js",
   "./manifest.webmanifest"
 ];
