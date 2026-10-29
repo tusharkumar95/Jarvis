@@ -49,6 +49,7 @@
     <button class="tool glass" data-go="briefly"><span>📰</span><b>Briefly</b><small>Live filtered news</small></button>
     <button class="tool glass" data-go="library"><span>🔖</span><b>Library</b><small>Useful sites Jarvis remembers</small></button>
     <button class="tool glass" data-go="discover"><span>🌍</span><b>Discover</b><small>Personalized learning</small></button>
+    <button class="tool glass" data-go="india-shop"><span>🇮🇳</span><b>India Shop</b><small>Indian stores &amp; INR</small></button>
     <button class="tool glass" data-go="lab"><span>🧪</span><b>Lab</b><small>Build new apps</small><span id="homeProjectCount" hidden>0</span></button>
   </div>
 </section>
@@ -155,6 +156,8 @@
   </article>
 </section>
 
+    <section id="india-shop" class="view"><div id="indiaShopMount"></div></section>
+
     <section id="lab" class="view">
   <div class="page-head"><p class="eyebrow">LAB</p><h2>Build something new</h2><p class="subtle">Capture app ideas here. Jarvis remembers them on this device.</p></div>
   <div class="builder glass"><label for="idea">What do you want to make?</label><textarea id="idea" rows="5" placeholder="Example: An app where I photograph grocery receipts and it remembers the price of every item…"></textarea><div class="builder-actions"><button id="startBuild">✦ Save project</button><span>Stored locally on this device</span></div></div>
@@ -188,6 +191,7 @@
   <script src="spreadsheet.js?v=1"></script>
   <script src="universal-search.js?v=1"></script>
   <script src="lab-builder.js?v=2"></script>
+  <script src="india-shop.js?v=1"></script>
   <script src="pwa.js?v=1"></script>
 </body>
 </html>
