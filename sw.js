@@ -1,4 +1,4 @@
-const CACHE = "jarvis-shell-stable-v5";
+const CACHE = "jarvis-shell-stable-v6";
 const SHELL = [
   "./",
   "./index.html",
@@ -27,7 +27,11 @@ const SHELL = [
   "./lab-builder.js",
   "./india-shop.js",
   "./pwa.js",
-  "./manifest.webmanifest"
+  "./manifest.webmanifest",
+  "./icon.svg",
+  "./icon-180.png",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", event => {
