@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="bg"><stop offset="0" stop-color="#081e2b"/><stop offset=".63" stop-color="#04101b"/><stop offset="1" stop-color="#010307"/></radialGradient><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter></defs><rect width="512" height="512" rx="108" fill="url(#bg)"/><circle cx="256" cy="256" r="182" fill="none" stroke="#00ceff" stroke-width="12" opacity=".4" filter="url(#glow)"/><circle cx="256" cy="256" r="180" fill="none" stroke="#07d8ff" stroke-width="12" stroke-dasharray="118 24 69 20 83 24" stroke-linecap="round"/><circle cx="256" cy="256" r="159" fill="none" stroke="#176183" stroke-opacity=".45" stroke-width="3"/><circle cx="256" cy="256" r="142" fill="none" stroke="#0a405d" stroke-opacity=".34" stroke-width="2" stroke-dasharray="3 9"/><path d="M289 156 V305 C289 345 272 365 237 365 C205 365 183 342 183 313" fill="none" stroke="#00bbff" opacity=".65" stroke-width="28" filter="url(#glow)" stroke-linecap="round"/><path d="M289 156 V305 C289 345 272 365 237 365 C205 365 183 342 183 313" fill="none" stroke="#f1fbff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<defs>
+ <radialGradient id="bg" cx=".5" cy=".4" r=".83"><stop stop-color="#0b2a3c"/><stop offset=".56" stop-color="#06121f"/><stop offset="1" stop-color="#02060e"/></radialGradient>
+ <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#21d9ff"/><stop offset=".48" stop-color="#62efff"/><stop offset="1" stop-color="#007de8"/></linearGradient>
+ <linearGradient id="silver" x1="0" y1="0" x2=".6" y2="1"><stop stop-color="#fff"/><stop offset=".5" stop-color="#e5faff"/><stop offset="1" stop-color="#9de7ff"/></linearGradient>
+ <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect x="10" y="10" width="492" height="492" rx="116" fill="url(#bg)" stroke="#2a5a73" stroke-width="5"/>
+<circle cx="256" cy="211" r="153" fill="none" stroke="#00ceff" stroke-width="16" opacity=".36" filter="url(#glow)"/>
+<circle cx="256" cy="211" r="151" fill="none" stroke="url(#cyan)" stroke-width="10" stroke-dasharray="104 13 30 12 54 17" stroke-linecap="round" transform="rotate(-18 256 211)"/>
+<circle cx="256" cy="211" r="135" fill="none" stroke="#1677a9" stroke-width="3" opacity=".52"/>
+<circle cx="256" cy="211" r="118" fill="none" stroke="#0c426c" stroke-width="2" stroke-dasharray="3 7" opacity=".8"/>
+<path d="M283 123 V239 C283 275 266 295 231 295 C204 295 183 279 182 254" fill="none" stroke="#0bd6ff" stroke-width="30" opacity=".5" filter="url(#glow)" stroke-linecap="round"/>
+<path d="M283 123 V239 C283 275 266 295 231 295 C204 295 183 279 182 254" fill="none" stroke="url(#silver)" stroke-width="21" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M90 397 H422" stroke="#04bcf1" stroke-width="2" opacity=".4"/>
+<text x="256" y="459" text-anchor="middle" font-family="DejaVu Sans,Arial,sans-serif" font-size="65" font-weight="800" letter-spacing="5.5" fill="#f2fbff">JARVIS</text>
+<path d="M179 473 H333" stroke="#0bcaf6" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+</svg>
