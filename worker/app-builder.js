@@ -1,4 +1,5 @@
 import researchWorker from "./research-plus.js";
+import fuelTipWorker from "./fuel-tip.js";
 
 const BUILD = "lab-app-builder-v1";
 const ALLOWED_ORIGINS = new Set([
@@ -10,6 +11,8 @@ const ALLOWED_ORIGINS = new Set([
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    if (url.pathname === "/fuel") return fuelTipWorker.fetch(request, env, ctx);
 
     if (url.pathname === "/health" && request.method === "GET") {
       const response = await researchWorker.fetch(request, env, ctx);
