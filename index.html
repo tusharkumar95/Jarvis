@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="library-v2.css?v=1" />
   <link rel="stylesheet" href="intelligence.css?v=1" />
   <link rel="stylesheet" href="lab-builder.css?v=2" />
+  <link rel="stylesheet" href="fuel-tip.css?v=1" />
   <style>
     .bottom-nav{grid-template-columns:repeat(4,1fr);width:min(460px,calc(100% - 20px))}
     .bottom-nav .nav small{white-space:nowrap}
@@ -59,6 +60,7 @@
     <button class="tool glass" data-go="library"><span>🔖</span><b>Library</b><small>Useful sites Jarvis remembers</small></button>
     <button class="tool glass" data-go="discover"><span>🌍</span><b>Discover</b><small>Personalized learning</small></button>
     <button class="tool glass" data-go="india-shop"><span>🇮🇳</span><b>India Shop</b><small>Indian stores &amp; INR</small></button>
+    <button class="tool glass" data-go="fuel"><span>⛽</span><b>Fuel Tip</b><small>Shell prices near you</small></button>
     <button class="tool glass" data-go="lab"><span>🧪</span><b>Lab</b><small>Build new apps</small><span id="homeProjectCount" hidden>0</span></button>
   </div>
 </section>
@@ -167,6 +169,27 @@
 
     <section id="india-shop" class="view"><div id="indiaShopMount"></div></section>
 
+    <section id="fuel" class="view">
+      <div class="page-head fuel-intro"><p class="eyebrow">FUEL TIP · CANADA</p><h2>Find your Shell.</h2><p class="subtle">See nearby Shell stations, their latest reported prices and whether a cheaper station could save you money. Pump prices may change after a report.</p></div>
+      <div class="fuel-panel glass">
+        <h3>Find Shell stations</h3>
+        <div class="fuel-actions">
+          <button id="fuelLocate" type="button" class="fuel-primary">⌖ Use my location</button>
+          <button id="fuelToronto" type="button" class="fuel-secondary">Central Toronto</button>
+          <button id="fuelRefresh" type="button" class="fuel-secondary">↻ Refresh</button>
+        </div>
+        <div class="fuel-control-grid">
+          <label class="fuel-control">Fuel type<select id="fuelGrade"><option value="regular">Regular</option><option value="midgrade">Midgrade</option><option value="premium">Premium</option><option value="diesel">Diesel</option></select></label>
+          <label class="fuel-control">Search radius<select id="fuelRadius"><option value="5">5 km</option><option value="8">8 km</option><option value="10">10 km</option><option value="15">15 km</option></select></label>
+          <label class="fuel-control">Fill-up size (L)<input id="fuelLitres" type="number" min="1" max="100" step="1" value="40" inputmode="decimal" /></label>
+        </div>
+        <p id="fuelStatus" class="fuel-status" role="status">Choose “Use my location” to search. Your exact location is not stored by Jarvis.</p>
+      </div>
+      <div id="fuelSummary" class="fuel-summary glass" hidden></div>
+      <div id="fuelResults" class="fuel-list"><div class="fuel-empty">No prices loaded yet. The tool uses the latest reported prices, not guaranteed live pump readings.</div></div>
+      <p class="fuel-footnote">Source: <a href="https://cardog.app/docs/fuel" target="_blank" rel="noopener">Cardog Canadian fuel-price snapshots</a>, once connected. Data can be up to seven days old, so check the reported time. Check <a href="https://www.gasbuddy.com/" target="_blank" rel="noopener">GasBuddy</a> for a second opinion or a more recent driver report. Distances are straight-line, not driving distances. Saved stations stay on this device.</p>
+    </section>
+
     <section id="lab" class="view">
   <div class="page-head"><p class="eyebrow">LAB</p><h2>Build something new</h2><p class="subtle">Capture app ideas here. Jarvis remembers them on this device.</p></div>
   <div class="builder glass"><label for="idea">What do you want to make?</label><textarea id="idea" rows="5" placeholder="Example: An app where I photograph grocery receipts and it remembers the price of every item…"></textarea><div class="builder-actions"><button id="startBuild">✦ Save project</button><span>Stored locally on this device</span></div></div>
@@ -201,6 +224,7 @@
   <script src="universal-search.js?v=1"></script>
   <script src="lab-builder.js?v=2"></script>
   <script src="india-shop.js?v=1"></script>
+  <script src="fuel-tip.js?v=1"></script>
   <script src="pwa.js?v=1"></script>
 </body>
 </html>
