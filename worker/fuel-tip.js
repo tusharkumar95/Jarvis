@@ -26,11 +26,14 @@ export default {
     const key = new Request("https://jarvis-fuel-cache.local/fuel/" + centerLat + "/" + centerLng + "/" + radius);
     const cache = typeof caches !== "undefined" ? caches.default : null;
     if (cache) {
-      const hit = await cache.match(key);
-      if (hit) {
-        const data = await hit.json();
-        return fuelJson({ ...data, cached:true }, 200, origin);
-      }
+      // Cache API is best-effort: an unsupported cache key must never block prices.
+      try {
+        const hit = await cache.match(key);
+        if (hit) {
+          const data = await hit.json();
+          return fuelJson({ ...data, cached:true }, 200, origin);
+        }
+      } catch {}
     }
     const remote = new URL("https://api.cardog.app/v2/fuel/stations");
     remote.searchParams.set("lat", String(centerLat));
